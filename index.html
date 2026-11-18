@@ -1,0 +1,1420 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Snowball Myth Melter</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Mountains+of+Christmas:wght@700&display=swap">
+<style>
+/* Layout: one centred column; each screen (start, game, summary, final) replaces the last. Single committed night-sky look. */
+:root {
+  --night: #0b1630;
+  --night-2: #142a55;
+  --panel: #12234a;
+  --line: #2a4479;
+  --snow: #f2f6fc;
+  --frost: #a9c2e4;
+  --ink: #12243f;
+  --berry: #ED2800;       /* NHC red */
+  --berry-deep: #a81d00;
+  --holly: #00AA27;       /* NHC green */
+  --gold: #FA9D00;        /* NHC yellow */
+  --nhc-blue: #009CE8;    /* NHC light blue */
+  --nhc-purple: #5E1886;  /* NHC purple */
+  --display: "Mountains of Christmas", "Georgia", serif;
+  --body: "Fredoka", "Trebuchet MS", "Segoe UI", sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { min-height: 100%; }
+body {
+  margin: 0;
+  background:
+    radial-gradient(1200px 500px at 50% -10%, #1e3a74 0%, transparent 70%),
+    radial-gradient(circle at 12% 30%, rgba(255,255,255,.5) 0 1px, transparent 2px),
+    radial-gradient(circle at 78% 18%, rgba(255,255,255,.4) 0 1px, transparent 2px),
+    radial-gradient(circle at 60% 70%, rgba(255,255,255,.3) 0 1px, transparent 2px),
+    var(--night);
+  background-size: auto, 220px 220px, 300px 300px, 260px 260px, auto;
+  color: var(--snow);
+  font-family: var(--body);
+  font-size: 17px;
+  line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 1000px; margin: 0 auto; padding-block: 24px 48px; }
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+p { margin: 0; }
+kbd {
+  display: inline-block; min-width: 1.9em; padding: 0 .45em; text-align: center;
+  font: 600 .85em/1.7 var(--body); color: var(--ink);
+  background: var(--snow); border-radius: 6px; box-shadow: 0 2px 0 var(--frost);
+}
+button { font-family: var(--body); cursor: pointer; }
+button:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+
+.btn {
+  display: inline-flex; align-items: center; gap: .5em;
+  font-size: 1.15rem; font-weight: 600; letter-spacing: .02em;
+  color: #fff; background: var(--berry);
+  border: 2px solid var(--gold); border-radius: 999px;
+  padding: .7em 1.8em; box-shadow: 0 5px 0 var(--berry-deep);
+  transition: transform .1s, box-shadow .1s, background .15s;
+}
+.btn:hover { background: #ff3d14; }
+.btn:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--berry-deep); }
+.btn.ghost { background: transparent; border-color: var(--line); box-shadow: none; color: var(--frost); font-size: 1rem; }
+.btn.ghost:hover { border-color: var(--frost); color: var(--snow); }
+
+.eyebrow { font-size: .8rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--gold); }
+
+/* ---------- Start screen ---------- */
+.hero { text-align: center; display: grid; gap: 10px; justify-items: center; padding-block: 8px 28px; }
+.hero h1 {
+  font-family: var(--display); font-weight: 700;
+  font-size: clamp(2.8rem, 8vw, 5rem); line-height: 1;
+  color: var(--snow);
+  text-shadow: 0 3px 0 var(--berry), 0 0 30px rgba(169,194,228,.35);
+}
+.hero .lede { max-width: 60ch; color: var(--frost); font-size: 1.1rem; }
+.lights { display: flex; gap: 18px; justify-content: center; margin-bottom: 6px; }
+.lights i { width: 10px; height: 14px; border-radius: 50% 50% 45% 45%; display: block; animation: blink 2.4s infinite; }
+.lights i:nth-child(5n+1) { background: var(--berry); }
+.lights i:nth-child(5n+2) { background: var(--gold); animation-delay: .5s; }
+.lights i:nth-child(5n+3) { background: var(--holly); animation-delay: 1s; }
+.lights i:nth-child(5n+4) { background: var(--nhc-blue); animation-delay: 1.5s; }
+.lights i:nth-child(5n+5) { background: #9b5cc4; animation-delay: 2s; }
+@keyframes blink { 0%, 100% { opacity: 1; box-shadow: 0 0 10px currentColor; } 50% { opacity: .45; } }
+
+.cards { display: grid; grid-template-columns: 1.15fr 1fr; gap: 20px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 22px 24px; display: grid; gap: 14px; align-content: start; min-width: 0; }
+.card h2 { font-size: 1.25rem; font-weight: 600; }
+.steps { margin: 0; padding-left: 1.3em; display: grid; gap: 10px; }
+.steps li::marker { color: var(--gold); font-weight: 700; }
+.score-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.score-list li { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px dashed var(--line); padding-bottom: 8px; }
+.score-list li:last-child { border-bottom: 0; padding-bottom: 0; }
+.pts { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pts.plus { color: #6fd39a; } .pts.minus { color: #ff8a8f; } .pts.zero { color: var(--frost); }
+.levels { display: grid; gap: 8px; }
+.level-row { display: flex; gap: 12px; align-items: baseline; }
+.level-row b { min-width: 7.5em; color: var(--gold); font-weight: 600; }
+.level-row span { color: var(--frost); font-size: .95rem; }
+.start-cta { display: grid; justify-items: center; gap: 10px; padding-top: 28px; }
+.start-cta small { color: var(--frost); font-size: .9rem; text-align: center; }
+
+/* ---------- Game screen ---------- */
+.hud {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px;
+  background: var(--panel); border: 1px solid var(--line); border-bottom: 0;
+  border-radius: 16px 16px 0 0; padding: 10px 16px;
+}
+.hud .stat { display: grid; line-height: 1.2; }
+.hud .stat small { font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; color: var(--frost); }
+.hud .stat strong { font-size: 1.15rem; font-variant-numeric: tabular-nums; }
+.hud .stat.score strong { color: var(--gold); }
+.hud .spacer { flex: 1; }
+.hud .tool { background: transparent; color: var(--frost); border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; font-size: .9rem; }
+.hud .tool:hover { color: var(--snow); border-color: var(--frost); }
+.stage { background: var(--night); border: 1px solid var(--line); border-radius: 0 0 16px 16px; overflow: hidden; display: flex; justify-content: center; }
+canvas#game {
+  display: block; width: min(100%, calc((100vh - 170px) * 1.5)); max-width: 100%; aspect-ratio: 3 / 2; height: auto;
+  touch-action: none; cursor: crosshair;
+}
+.hint { text-align: center; color: var(--frost); font-size: .9rem; padding-top: 10px; }
+
+/* ---------- Summary screen ---------- */
+.summary-head { display: grid; gap: 8px; text-align: center; justify-items: center; padding-bottom: 20px; }
+.summary-head h2 { font-family: var(--display); font-size: clamp(2.2rem, 6vw, 3.4rem); line-height: 1.05; }
+.stats { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; padding-bottom: 24px; }
+.stats div { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 10px 18px; text-align: center; min-width: 9.5em; }
+.stats small { display: block; font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; color: var(--frost); }
+.stats strong { font-size: 1.6rem; font-variant-numeric: tabular-nums; color: var(--gold); }
+.pairs { display: grid; gap: 18px; }
+.pair { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; }
+.pair header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 20px; border-bottom: 1px solid var(--line); }
+.pair header .rnd { font-weight: 600; color: var(--frost); font-size: .9rem; letter-spacing: .08em; text-transform: uppercase; }
+.chip { font-size: .85rem; font-weight: 600; padding: 3px 12px; border-radius: 999px; }
+.chip.correct { background: rgba(0,170,39,.2); color: #7fe0a8; border: 1px solid rgba(0,170,39,.6); }
+.chip.wrong { background: rgba(237,40,0,.18); color: #ff9aa0; border: 1px solid rgba(237,40,0,.6); }
+.chip.missed { background: rgba(169,194,228,.12); color: var(--frost); border: 1px solid var(--line); }
+.cols { display: grid; grid-template-columns: 1fr 1fr; }
+.side { padding: 16px 20px 20px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.side + .side { border-left: 1px solid var(--line); }
+.tag { justify-self: start; font-size: .72rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; padding: 2px 10px; border-radius: 6px; }
+.myth .tag { background: var(--berry); color: #fff; }
+.truth .tag { background: var(--holly); color: #fff; }
+.stmt { font-weight: 600; font-size: 1.05rem; }
+.myth .stmt { text-decoration: line-through; text-decoration-color: rgba(237,40,0,.75); text-decoration-thickness: 2px; }
+.why { color: #d3def0; font-size: .97rem; }
+.why b { color: var(--snow); font-weight: 600; }
+.next-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; padding-top: 28px; }
+
+/* ---------- Final screen ---------- */
+.final { display: grid; justify-items: center; text-align: center; gap: 14px; padding-top: 10px; }
+.final h2 { font-family: var(--display); font-size: clamp(2.4rem, 7vw, 4rem); line-height: 1; }
+.big-score { font-size: clamp(3rem, 10vw, 5rem); font-weight: 700; color: var(--gold); font-variant-numeric: tabular-nums; line-height: 1; }
+.rank { font-size: 1.3rem; font-weight: 600; }
+.rank-note { color: var(--frost); max-width: 52ch; }
+.breakdown { width: min(100%, 480px); border-collapse: collapse; margin-top: 8px; font-variant-numeric: tabular-nums; }
+.breakdown th, .breakdown td { padding: 8px 12px; border-bottom: 1px solid var(--line); text-align: left; }
+.breakdown th { font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; color: var(--frost); font-weight: 600; }
+.breakdown td:not(:first-child), .breakdown th:not(:first-child) { text-align: right; }
+
+/* ---------- NHC branding ---------- */
+/* Full-colour master logo is only used on white, per the NHC logo guide, with clear space around it. */
+.logo-plate { background: #ffffff; border-radius: 14px; padding: 14px 18px; display: inline-block; }
+.nhc-logo {
+  display: block; width: clamp(170px, 28vw, 250px); max-width: 100%; aspect-ratio: 600 / 263;
+  background: #ffffff url("data:image/jpeg;base64,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") center / contain no-repeat;
+}
+.logo-plate.small .nhc-logo { width: clamp(140px, 22vw, 180px); }
+.tagline { font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--nhc-blue); font-size: .95rem; }
+.pillars { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; padding-bottom: 24px; }
+.pillar { display: flex; align-items: center; gap: 8px; background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px 6px 8px; font-size: .9rem; min-width: 0; }
+.pillar i { width: 22px; height: 22px; border-radius: 6px; background: var(--c); flex: none; display: grid; place-items: center; font-style: normal; font-weight: 700; font-size: .75rem; color: #fff; }
+.pillar.missed { opacity: .4; }
+.pillar.missed i { background: transparent; border: 2px dashed var(--c); color: var(--frost); }
+.chip.pillar-chip { background: transparent; border: 1px solid var(--c); color: var(--snow); }
+.pair header .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* ---------- Secret bonus ---------- */
+.btn.secret { background: var(--gold); color: var(--ink); border-color: var(--snow); box-shadow: 0 5px 0 #b87300, 0 0 24px rgba(250,157,0,.55); animation: glow 1.6s ease-in-out infinite; }
+.btn.secret:hover { background: #ffb22e; }
+@keyframes glow { 50% { box-shadow: 0 5px 0 #b87300, 0 0 40px rgba(250,157,0,.9); } }
+.secret-note { color: var(--gold); font-weight: 600; text-align: center; }
+#screen-bonus .stats { padding-bottom: 4px; }
+
+@media (max-width: 720px) {
+  .cards, .cols { grid-template-columns: 1fr; }
+  .side + .side { border-left: 0; border-top: 1px solid var(--line); }
+  .hud { gap: 6px 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lights i, .btn.secret { animation: none; }
+  .btn { transition: none; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- START -->
+  <section id="screen-start">
+    <div class="hero">
+      <div class="logo-plate"><span class="nhc-logo" role="img" aria-label="North Hertfordshire College"></span></div>
+      <div class="lights" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <span class="eyebrow">NHC Staff Christmas Challenge · EdTech edition</span>
+      <h1>Snowball Myth Melter</h1>
+      <p class="lede">Two snowballs fall each round. One carries a true statement about education technology, the other carries a myth. Melt the myth with your flamethrower and leave the truth standing.</p>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <h2>How to play</h2>
+        <ol class="steps">
+          <li>Read both snowballs as they fall from the sky.</li>
+          <li>Move the flamethrower with <kbd>←</kbd> <kbd>→</kbd> (or <kbd>A</kbd> <kbd>D</kbd>), or by moving your mouse over the game.</li>
+          <li>Fire with <kbd>Space</kbd> or a mouse click. Melt <b>only the myth</b>.</li>
+          <li>Every melted myth bursts open to release one of NHC's <b>Five Pillars</b> as a present. Catch it on your sled for a bonus.</li>
+          <li>Each level has 5 rounds. Afterwards, a summary explains why every myth is wrong and every truth is right.</li>
+        </ol>
+        <p style="color:var(--frost);font-size:.92rem">Press <kbd>P</kbd> to pause. On a touchscreen, tap or drag on the game to aim and fire.</p>
+      </div>
+      <div class="card">
+        <h2>Scoring</h2>
+        <ul class="score-list">
+          <li><span>Melt the myth</span><span class="pts plus">+100</span></li>
+          <li><span>Melt it early (high in the sky)</span><span class="pts plus">up to +50</span></li>
+          <li><span>Catch a Five Pillars present</span><span class="pts plus">+25</span></li>
+          <li><span>Streak bonus, per myth in a row</span><span class="pts plus">+10 each</span></li>
+          <li><span>Melt the true statement</span><span class="pts minus">−50</span></li>
+          <li><span>Myth hits the ground</span><span class="pts zero">0</span></li>
+        </ul>
+        <h2>Levels</h2>
+        <div class="levels">
+          <div class="level-row"><b>1 · Easy</b><span>Slow, steady snowfall</span></div>
+          <div class="level-row"><b>2 · Intermediate</b><span>Faster snowballs, trickier myths</span></div>
+          <div class="level-row"><b>3 · Challenging</b><span>Fast, drifting snowballs</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="start-cta">
+      <button class="btn" id="btn-start" type="button">Start Game</button>
+      <small>or press <kbd>Enter</kbd></small>
+    </div>
+  </section>
+
+  <!-- GAME -->
+  <section id="screen-game" hidden>
+    <div class="hud">
+      <div class="stat"><small id="hud-l1">Level</small><strong id="hud-level">1 · Easy</strong></div>
+      <div class="stat"><small id="hud-l2">Round</small><strong id="hud-round">1 / 5</strong></div>
+      <div class="stat score"><small>Score</small><strong id="hud-score">0</strong></div>
+      <div class="stat"><small id="hud-l4">Streak</small><strong id="hud-streak">0</strong></div>
+      <span class="spacer"></span>
+      <button class="tool" id="btn-sound" type="button">Sound: on</button>
+      <button class="tool" id="btn-pause" type="button">Pause</button>
+      <button class="tool" id="btn-quit" type="button">Quit</button>
+    </div>
+    <div class="stage"><canvas id="game" aria-label="Game area: falling snowballs and your flamethrower"></canvas></div>
+    <p class="hint"><kbd>←</kbd> <kbd>→</kbd> move · <kbd>Space</kbd> or click to fire · <kbd>P</kbd> pause</p>
+  </section>
+
+  <!-- SUMMARY -->
+  <section id="screen-summary" hidden>
+    <div class="summary-head">
+      <div class="logo-plate small"><span class="nhc-logo" role="img" aria-label="North Hertfordshire College"></span></div>
+      <span class="eyebrow" id="sum-eyebrow">Level 1 · Easy</span>
+      <h2 id="sum-title">Level complete!</h2>
+      <p style="color:var(--frost);max-width:58ch">Here is why each myth was a myth, and why each true statement holds up.</p>
+    </div>
+    <div class="stats">
+      <div><small>Level score</small><strong id="sum-level-score">0</strong></div>
+      <div><small>Myths melted</small><strong id="sum-melted">0 / 5</strong></div>
+      <div><small>Pillars caught</small><strong id="sum-pillars">0 / 5</strong></div>
+      <div><small>Total score</small><strong id="sum-total">0</strong></div>
+    </div>
+    <div class="pillars" id="sum-pillar-row" aria-label="Five Pillars caught this level"></div>
+    <div class="pairs" id="sum-pairs"></div>
+    <p class="secret-note" id="sum-secret" hidden style="padding-top:24px">Every myth melted, with no truths harmed. Something is stirring at the North Pole…</p>
+    <div class="next-row">
+      <button class="btn" id="btn-next" type="button">Continue</button>
+    </div>
+  </section>
+
+  <!-- SECRET BONUS RESULTS -->
+  <section id="screen-bonus" hidden>
+    <div class="final">
+      <div class="logo-plate small"><span class="nhc-logo" role="img" aria-label="North Hertfordshire College"></span></div>
+      <span class="eyebrow">Secret bonus round · Santa Siege</span>
+      <h2>Overwhelmed by Santas!</h2>
+      <div class="big-score" id="bon-score">0</div>
+      <p class="rank" id="bon-best"></p>
+      <div class="stats">
+        <div><small>Survived</small><strong id="bon-time">0:00</strong></div>
+        <div><small>Santas hit</small><strong id="bon-hits">0</strong></div>
+        <div><small>Siege level</small><strong id="bon-siege">1</strong></div>
+        <div><small>Best combo</small><strong id="bon-combo">0</strong></div>
+      </div>
+      <p class="rank-note" style="font-size:.92rem">Score: 10 points per Santa, extra for combos and Big Santas, plus 1 point for every second survived. Personal bests are saved in this browser only.</p>
+      <div class="next-row">
+        <button class="btn" id="btn-bonus-again" type="button">Play bonus again</button>
+        <button class="btn ghost" id="btn-bonus-done" type="button">See final results</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL -->
+  <section id="screen-final" hidden>
+    <div class="final">
+      <div class="lights" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="logo-plate"><span class="nhc-logo" role="img" aria-label="North Hertfordshire College"></span></div>
+      <span class="eyebrow">All three levels complete</span>
+      <h2>Merry Myth-busting!</h2>
+      <p class="tagline">From sparkling to shining brightly</p>
+      <div class="big-score" id="fin-score">0</div>
+      <p class="rank" id="fin-rank"></p>
+      <p class="rank-note" id="fin-note"></p>
+      <table class="breakdown">
+        <thead><tr><th>Level</th><th>Myths melted</th><th>Pillars caught</th><th>Points</th></tr></thead>
+        <tbody id="fin-rows"></tbody>
+      </table>
+      <p class="secret-note" id="fin-bonus" hidden></p>
+      <div class="next-row">
+        <button class="btn" id="btn-again" type="button">Play again</button>
+        <button class="btn ghost" id="btn-home" type="button">Back to instructions</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(() => {
+"use strict";
+
+/* ================= CONTENT ================= */
+const LEVELS = [
+  {
+    name: "Easy", speed: 40, vary: 0.04, sway: 0, radius: 108,
+    pairs: [
+      {
+        myth: "Today's students are 'digital natives' who already know how to learn with technology.",
+        mythWhy: "Growing up with devices builds familiarity with social and entertainment apps, not skill at learning with technology. Reviews of the evidence (e.g. Kirschner & De Bruyckere, 2017) found no generation that 'naturally' uses tech well for learning, and the label can lead teachers to skip teaching these skills.",
+        truth: "Skills like judging whether a website is reliable need to be taught explicitly.",
+        truthWhy: "Stanford researchers (2016, with later follow-ups) found most students struggled to tell sponsored content and dubious sites from reliable sources. Source checking and 'lateral reading' improve when they are modelled and practised."
+      },
+      {
+        myth: "The more technology we use in a lesson, the more students will learn.",
+        mythWhy: "The OECD's 2015 report 'Students, Computers and Learning' found that countries investing heavily in classroom ICT saw no appreciable improvement in reading, maths or science. Very heavy use was sometimes linked to lower results.",
+        truth: "How technology is used matters far more than how much of it is used.",
+        truthWhy: "The Education Endowment Foundation's guidance on digital technology says tools help when they serve a clear teaching purpose: better explanations, more practice, better feedback or better assessment."
+      },
+      {
+        myth: "The top search results have been checked for accuracy by the search engine.",
+        mythWhy: "Search engines rank pages using relevance signals such as links, keywords, freshness and popularity. They don't fact-check what pages say, and paid adverts can appear above everything else.",
+        truth: "Search results are ranked by algorithms, so sources still need checking.",
+        truthWhy: "Because ranking reflects relevance rather than truth, checking the author, date, evidence and other sources is still necessary, even for results on page one."
+      },
+      {
+        myth: "A strong password on its own is enough to keep a school account safe.",
+        mythWhy: "Strong passwords are still stolen through phishing emails, data breaches and reuse across sites. Once an attacker has the password, nothing else stands in the way.",
+        truth: "Multi-factor authentication makes accounts far harder to break into.",
+        truthWhy: "Microsoft reports that MFA blocks over 99.9% of automated account-compromise attacks. With a second factor, a stolen password alone isn't enough to sign in."
+      },
+      {
+        myth: "If an image is on the internet, it's free to use in teaching materials.",
+        mythWhy: "Most images online are protected by copyright from the moment they are created. Educational exceptions exist in some countries but they are narrow, and posting materials publicly can go beyond them.",
+        truth: "Creative Commons images can be reused, as long as you follow the licence terms.",
+        truthWhy: "Creative Commons licences give permission in advance, usually on condition that you credit the creator. Sites such as Wikimedia Commons and Openverse make openly licensed images easy to find."
+      }
+    ]
+  },
+  {
+    name: "Intermediate", speed: 54, vary: 0.08, sway: 0, radius: 104,
+    pairs: [
+      {
+        myth: "Teaching to each student's learning style (visual, auditory, kinaesthetic) improves results.",
+        mythWhy: "A major review by Pashler and colleagues (2008) found no sound evidence that matching teaching to a preferred learning style improves learning. Later studies agree, even though the belief remains widespread.",
+        truth: "Pairing words with relevant visuals helps most learners understand and remember.",
+        truthWhy: "Dual coding and Mayer's multimedia principle show that people learn better from words plus pictures than from words alone. This benefits learners in general, not one 'type' of learner."
+      },
+      {
+        myth: "Students can flick between social media and schoolwork without it affecting learning.",
+        mythWhy: "Research on task switching shows it slows people down and increases errors. Students who multitask while studying or in lectures tend to remember less and score lower.",
+        truth: "A classmate multitasking on a laptop can lower the learning of students nearby.",
+        truthWhy: "Sana, Weston and Cepeda (2013) found that students who could see a peer multitasking on a laptop scored lower on a comprehension test than students who couldn't."
+      },
+      {
+        myth: "Typing notes on a laptop is always better than writing them by hand.",
+        mythWhy: "Typing is faster, but speed tempts students to copy word for word. Studies comparing the two (e.g. Mueller & Oppenheimer, 2014, and later replications) have mixed results, so neither method wins every time.",
+        truth: "Notes help most when students summarise in their own words instead of copying.",
+        truthWhy: "Processing ideas by rephrasing, connecting and condensing them is what builds understanding. Mueller & Oppenheimer linked verbatim copying to weaker conceptual understanding."
+      },
+      {
+        myth: "Online quizzes are only useful for measuring learning, not for building it.",
+        mythWhy: "This ignores the testing effect. Pulling information out of memory is itself a powerful way to learn, not just a way of checking what has been learned.",
+        truth: "Frequent low-stakes quizzes strengthen long-term memory.",
+        truthWhy: "Roediger and Karpicke (2006) found students who practised recalling material remembered much more a week later than those who re-read it. Quick digital quizzes make this retrieval practice easy."
+      },
+      {
+        myth: "Generative AI chatbots always give accurate, fact-checked answers.",
+        mythWhy: "Chatbots generate likely-sounding text. Unless connected to a source, they don't look facts up, and they can invent references, quotes and statistics with complete confidence.",
+        truth: "AI chatbots can produce convincing but false information, so outputs need checking.",
+        truthWhy: "These errors are often called 'hallucinations'. Treat AI output as a draft to verify against reliable sources, and teach students to do the same."
+      }
+    ]
+  },
+  {
+    name: "Challenging", speed: 66, vary: 0.12, sway: 60, radius: 100,
+    pairs: [
+      {
+        myth: "Brain-training games are proven to boost general intelligence and school grades.",
+        mythWhy: "A large review (Simons et al., 2016) found players improve on the trained games, with little evidence that gains transfer to other skills. In 2016 Lumosity settled with the US Federal Trade Commission for $2 million over unsupported claims.",
+        truth: "Practising a brain-training game mainly makes you better at that game.",
+        truthWhy: "This is called 'near transfer'. The gains are real but narrow. Getting better at a subject still comes from practising that subject."
+      },
+      {
+        myth: "Students will watch a long lecture video to the end if the content is good.",
+        mythWhy: "An analysis of 6.9 million edX video sessions (Guo, Kim & Rubin, 2014) found median viewing time topped out at around six minutes, however long the video was.",
+        truth: "Breaking video into short, focused segments helps keep learners engaged.",
+        truthWhy: "The same edX study recommended videos under six minutes, and Mayer's segmenting principle shows learners understand more when content comes in learner-paced chunks."
+      },
+      {
+        myth: "Adding points, badges and leaderboards always increases motivation and learning.",
+        mythWhy: "Meta-analyses (e.g. Sailer & Homner, 2020) show positive effects on average but wide variation. Leaderboards can demotivate lower-ranked students, and rewards can crowd out interest in the task itself.",
+        truth: "Gamification works best when game elements are tied to real learning goals.",
+        truthWhy: "Effects are strongest when challenges, feedback and progress tracking support the learning itself, rather than sitting on top as decoration."
+      },
+      {
+        myth: "AI detection tools can reliably prove that a student used AI to write their work.",
+        mythWhy: "Detectors give false positives and are easily fooled by light editing. OpenAI withdrew its own classifier in 2023 for low accuracy, and a Stanford study (Liang et al., 2023) found detectors often flagged non-native English writing as AI-generated.",
+        truth: "Drafts, version history and conversations show authorship better than detector scores.",
+        truthWhy: "Evidence of the process, such as planning notes, document history and a short discussion, shows how the work developed. Sector guidance, for example from Jisc in the UK, advises against relying on detector scores alone."
+      },
+      {
+        myth: "Captions and transcripts only benefit students with hearing impairments.",
+        mythWhy: "Captions help many groups: people learning in a second language, students in noisy places, and anyone reviewing key terms. Features designed for accessibility routinely help everyone.",
+        truth: "Captions on videos can improve comprehension and memory for a wide range of learners.",
+        truthWhy: "A review of more than 100 studies (Gernsbacher, 2015) found captions improve attention, comprehension and memory for children and adults, hearing and deaf, native and non-native speakers."
+      }
+    ]
+  }
+];
+const ROUNDS = 5;
+
+/* ================= SETUP ================= */
+const W = 960, H = 640, GROUND = 566;
+const $ = id => document.getElementById(id);
+const canvas = $("game");
+const ctx = canvas.getContext("2d");
+const reduceMotion = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+const C = { berry: "#ED2800", gold: "#FA9D00", holly: "#00AA27", blue: "#009CE8", purple: "#5E1886", frost: "#a9c2e4", snow: "#f2f6fc", ink: "#12243f" };
+// NHC Five Pillars, coloured as on the "Five Pillars. One Vision. One College." banner
+const PILLARS = [
+  { n: 1, name: "Careers-focused curriculum", col: "#9B6FA6" },
+  { n: 2, name: "Exceptional teaching and learning", col: "#CBA826" },
+  { n: 3, name: "Culture and people development", col: "#1BA3B4" },
+  { n: 4, name: "Financial sustainability", col: "#C9636F" },
+  { n: 5, name: "Building our reputation", col: "#A7CB3A" }
+];
+const FONT = '"Fredoka", "Trebuchet MS", "Segoe UI", sans-serif';
+const DISPLAY = '"Mountains of Christmas", Georgia, serif';
+
+function resize() {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+resize();
+window.addEventListener("resize", resize);
+
+const rand = (a, b) => a + Math.random() * (b - a);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+/* Scenery generated once */
+const stars = Array.from({ length: 70 }, () => ({ x: rand(0, W), y: rand(40, GROUND - 120), r: rand(.5, 1.6), p: rand(0, 6.28) }));
+const flakes = Array.from({ length: reduceMotion ? 25 : 90 }, () => ({ x: rand(0, W), y: rand(0, H), r: rand(.8, 2.6), s: rand(14, 40), d: rand(0, 6.28) }));
+const trees = [];
+for (let i = 0; i < 9; i++) trees.push({ x: 40 + i * 110 + rand(-25, 25), h: rand(70, 130), back: i % 2 === 0 });
+trees.sort((a, b) => (a.back === b.back ? 0 : a.back ? -1 : 1));
+
+/* ================= STATE ================= */
+const screens = { start: $("screen-start"), game: $("screen-game"), summary: $("screen-summary"), bonus: $("screen-bonus"), final: $("screen-final") };
+const S = {
+  screen: "start", mode: "myth", level: 0, round: 0, score: 0, levelScores: [0, 0, 0], streak: 0,
+  results: [[], [], []], order: [], phase: "idle", t: 0, phaseT: 0,
+  balls: [], shots: [], parts: [], pops: [], gifts: [], cur: null,
+  px: W / 2, targetX: null, cool: 0, paused: false, shake: 0
+};
+const keys = { left: false, right: false, fire: false };
+let pointerHeld = false;
+let fontsReady = false;
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { fontsReady = true; S.balls.forEach(b => b.lines = null); });
+
+function show(name) {
+  for (const k in screens) screens[k].hidden = k !== name;
+  S.screen = name;
+  window.scrollTo(0, 0);
+}
+
+/* ================= AUDIO ================= */
+let actx = null, muted = false;
+function tone(freq, endFreq, dur, type, gain, delay = 0) {
+  if (muted) return;
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    const t0 = actx.currentTime + delay;
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = type; o.frequency.setValueAtTime(freq, t0);
+    o.frequency.exponentialRampToValueAtTime(endFreq, t0 + dur);
+    g.gain.setValueAtTime(gain, t0); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    o.connect(g).connect(actx.destination); o.start(t0); o.stop(t0 + dur + .02);
+  } catch (e) { /* audio unavailable */ }
+}
+const sfx = {
+  fire: () => tone(260, 90, .09, "sawtooth", .02),
+  melt: () => { tone(523, 523, .14, "sine", .07); tone(659, 659, .14, "sine", .07, .1); tone(784, 784, .25, "sine", .07, .2); },
+  wrong: () => tone(200, 90, .4, "square", .04),
+  miss: () => tone(330, 140, .45, "triangle", .06),
+  throw: () => tone(620, 340, .06, "sine", .03),
+  thud: () => tone(420, 150, .12, "triangle", .07)
+};
+
+/* ================= FLOW ================= */
+function startGame() {
+  S.score = 0; S.levelScores = [0, 0, 0]; S.results = [[], [], []]; S.streak = 0; S.level = 0;
+  B.lastScore = null; B.fromGame = false;
+  startLevel();
+}
+function startLevel() {
+  S.mode = "myth";
+  S.round = 0;
+  S.order = shuffle([0, 1, 2, 3, 4]);
+  S.balls = []; S.shots = []; S.pops = []; S.parts = []; S.gifts = [];
+  S.phase = "intro"; S.phaseT = 0; S.paused = false;
+  S.px = W / 2; S.targetX = null;
+  show("game");
+  updateHUD();
+  canvas.focus && canvas.focus();
+}
+function startRound() {
+  const L = LEVELS[S.level];
+  const pair = L.pairs[S.order[S.round]];
+  const mythLeft = Math.random() < .5;
+  const xs = [W * .27, W * .73];
+  const mk = (text, isMyth, x) => ({
+    text, isMyth, baseX: x, x, y: -L.radius * .35, r: L.radius,
+    speed: L.speed * (1 + rand(-L.vary, L.vary)), ph: rand(0, 6.28),
+    state: "falling", melt: 0, lines: null, fs: 16, tag: null,
+    dots: Array.from({ length: 7 }, () => ({ a: rand(0, 6.28), d: rand(.3, .9), r: rand(2, 5) }))
+  });
+  S.balls = [mk(pair.myth, true, mythLeft ? xs[0] : xs[1]), mk(pair.truth, false, mythLeft ? xs[1] : xs[0])];
+  S.shots = [];
+  S.phase = "falling"; S.phaseT = 0;
+  updateHUD();
+}
+function endRound(outcome, pts) {
+  if (S.phase !== "falling") return;
+  const L = LEVELS[S.level];
+  const pair = L.pairs[S.order[S.round]];
+  S.cur = { pair, outcome, pts, pillar: PILLARS[S.round], caught: false };
+  S.results[S.level].push(S.cur);
+  S.levelScores[S.level] += pts;
+  S.score = Math.max(0, S.score + pts);
+  S.balls.forEach(b => b.tag = b.isMyth ? "MYTH" : "TRUE");
+  S.shots = [];
+  S.phase = "reveal"; S.phaseT = 0;
+  updateHUD();
+}
+function nextRound() {
+  S.round++;
+  if (S.round >= ROUNDS) showSummary(); else startRound();
+}
+
+function hit(b) {
+  b.state = "melting"; b.melt = 0;
+  burst(b.x, b.y, b.r, b.isMyth);
+  if (b.isMyth) S.gifts.push({ kind: "present", pillar: PILLARS[S.round], x: b.x, y: b.y, vy: -60, t: 0, state: "fall" });
+  else S.gifts.push({ kind: "coal", x: b.x, y: b.y, vx: rand(-50, 50), vy: -140, spin: 0 });
+  if (b.isMyth) {
+    S.streak++;
+    const early = Math.round(50 * clamp(1 - (b.y + b.r) / GROUND, 0, 1));
+    const streakBonus = 10 * Math.min(S.streak - 1, 5);
+    const pts = 100 + early + streakBonus;
+    popup(`Myth melted! +${pts}`, b.x, b.y, "#7fe0a8");
+    if (streakBonus) popup(`Streak x${S.streak}`, b.x, b.y + 34, C.gold);
+    sfx.melt();
+    endRound("correct", pts);
+  } else {
+    S.streak = 0;
+    b.wrong = true;
+    popup("That one was true! −50", b.x, b.y, "#ff9aa0");
+    popup("You got a lump of coal!", b.x, b.y + 34, C.frost);
+    S.shake = reduceMotion ? 0 : 10;
+    sfx.wrong();
+    endRound("wrong", -50);
+  }
+}
+
+/* ================= HUD & SCREENS ================= */
+function setText(id, v) { const el = $(id); v = String(v); if (el.textContent !== v) el.textContent = v; }
+function updateHUD() {
+  if (S.mode === "bonus") {
+    setText("hud-l1", "Bonus round"); setText("hud-level", `Siege ${B.siege}`);
+    setText("hud-l2", "Time"); setText("hud-round", fmtTime(B.t));
+    setText("hud-score", bonusScore());
+    setText("hud-l4", "Combo"); setText("hud-streak", B.combo);
+    return;
+  }
+  setText("hud-l1", "Level"); setText("hud-level", `${S.level + 1} · ${LEVELS[S.level].name}`);
+  setText("hud-l2", "Round"); setText("hud-round", `${Math.min(S.round + 1, ROUNDS)} / ${ROUNDS}`);
+  setText("hud-score", S.score);
+  setText("hud-l4", "Streak"); setText("hud-streak", S.streak);
+}
+
+const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+function showSummary() {
+  const L = LEVELS[S.level];
+  const res = S.results[S.level];
+  const melted = res.filter(r => r.outcome === "correct").length;
+  $("sum-eyebrow").textContent = `Level ${S.level + 1} · ${L.name}`;
+  $("sum-title").textContent = melted === 5 ? "A perfect thaw!" : melted >= 3 ? "Level complete!" : "Level complete. Time to warm up!";
+  $("sum-level-score").textContent = S.levelScores[S.level];
+  $("sum-melted").textContent = `${melted} / ${ROUNDS}`;
+  $("sum-pillars").textContent = `${res.filter(r => r.caught).length} / ${ROUNDS}`;
+  $("sum-pillar-row").innerHTML = PILLARS.map((p, i) => {
+    const got = res[i] && res[i].caught;
+    return `<span class="pillar${got ? "" : " missed"}" style="--c:${p.col}" title="${got ? "Caught" : "Not caught"}"><i>${got ? p.n : ""}</i>Pillar ${p.n}: ${esc(p.name)}</span>`;
+  }).join("");
+  $("sum-total").textContent = S.score;
+  const chip = {
+    correct: r => `<span class="chip correct">You melted the myth · +${r.pts}</span>`,
+    wrong: () => `<span class="chip wrong">You melted the truth · −50</span>`,
+    missed: () => `<span class="chip missed">The myth reached the ground · 0</span>`
+  };
+  $("sum-pairs").innerHTML = res.map((r, i) => `
+    <article class="pair">
+      <header><span class="rnd">Round ${i + 1}</span><span class="chips">${chip[r.outcome](r)}${r.caught ? `<span class="chip pillar-chip" style="--c:${r.pillar.col}">Pillar ${r.pillar.n} caught · +25</span>` : ""}</span></header>
+      <div class="cols">
+        <section class="side myth">
+          <span class="tag">Myth</span>
+          <p class="stmt">${esc(r.pair.myth)}</p>
+          <p class="why"><b>Why it's a myth:</b> ${esc(r.pair.mythWhy)}</p>
+        </section>
+        <section class="side truth">
+          <span class="tag">True</span>
+          <p class="stmt">${esc(r.pair.truth)}</p>
+          <p class="why"><b>Why it's accurate:</b> ${esc(r.pair.truthWhy)}</p>
+        </section>
+      </div>
+    </article>`).join("");
+  const nxt = $("btn-next");
+  const lastLevel = S.level === LEVELS.length - 1;
+  const secret = lastLevel && allMythsMelted();
+  nxt.textContent = !lastLevel
+    ? `Start Level ${S.level + 2}: ${LEVELS[S.level + 1].name}`
+    : secret ? "Secret bonus round unlocked!" : "See final results";
+  nxt.classList.toggle("secret", secret);
+  $("sum-secret").hidden = !secret;
+  show("summary");
+  nxt.focus({ preventScroll: true });
+}
+function showFinal() {
+  const melted = S.results.flat().filter(r => r.outcome === "correct").length;
+  $("fin-score").textContent = S.score;
+  let rank, note;
+  if (melted === 15) { rank = "Chief Myth-Melting Elf"; note = "Every single myth melted. The staffroom's EdTech oracle this Christmas."; }
+  else if (melted >= 11) { rank = "Senior Snow Scientist"; note = `${melted} of 15 myths melted. A sharp eye for evidence, with a few sneaky snowballs left to revisit.`; }
+  else if (melted >= 7) { rank = "Frosty Fact-Checker"; note = `${melted} of 15 myths melted. A solid effort. The level summaries are worth a second read.`; }
+  else { rank = "Apprentice Elf"; note = `${melted} of 15 myths melted. Plenty of myths are very convincing. Have another go now you've seen the explanations.`; }
+  $("fin-rank").textContent = rank;
+  $("fin-note").textContent = note;
+  $("fin-rows").innerHTML = LEVELS.map((L, i) => {
+    const m = S.results[i].filter(r => r.outcome === "correct").length;
+    const pc = S.results[i].filter(r => r.caught).length;
+    return `<tr><td>${i + 1} · ${L.name}</td><td>${m} / ${ROUNDS}</td><td>${pc} / ${ROUNDS}</td><td>${S.levelScores[i]}</td></tr>`;
+  }).join("");
+  const fb = $("fin-bonus");
+  fb.hidden = !(B.fromGame && B.lastScore != null);
+  fb.textContent = `Secret bonus round, Santa Siege: ${B.lastScore} points`;
+  show("final");
+}
+
+/* ================= INPUT ================= */
+function fire() {
+  if (S.screen !== "game" || S.paused || S.cool > 0) return;
+  if (S.mode === "bonus") {
+    if (B.phase !== "play") return;
+    S.shots.push({ x: S.px, y: GROUND - 42 });
+    S.cool = .16;
+    sfx.throw();
+    return;
+  }
+  if (S.phase !== "falling") return;
+  S.shots.push({ x: S.px, y: GROUND - 34 });
+  S.cool = .22;
+  sfx.fire();
+}
+function togglePause(force) {
+  if (S.screen !== "game") return;
+  S.paused = typeof force === "boolean" ? force : !S.paused;
+  $("btn-pause").textContent = S.paused ? "Resume" : "Pause";
+}
+window.addEventListener("keydown", e => {
+  if (S.screen === "start" && e.key === "Enter" && document.activeElement === document.body) { e.preventDefault(); startGame(); return; }
+  if (S.screen !== "game") return;
+  switch (e.code) {
+    case "ArrowLeft": case "KeyA": keys.left = true; S.targetX = null; e.preventDefault(); break;
+    case "ArrowRight": case "KeyD": keys.right = true; S.targetX = null; e.preventDefault(); break;
+    case "Space": keys.fire = true; e.preventDefault(); if (!e.repeat) fire(); break;
+    case "KeyP": case "Escape": togglePause(); e.preventDefault(); break;
+  }
+});
+window.addEventListener("keyup", e => {
+  if (e.code === "ArrowLeft" || e.code === "KeyA") keys.left = false;
+  if (e.code === "ArrowRight" || e.code === "KeyD") keys.right = false;
+  if (e.code === "Space") { keys.fire = false; if (S.screen === "game") e.preventDefault(); }
+});
+window.addEventListener("blur", () => { keys.left = keys.right = keys.fire = false; pointerHeld = false; });
+function gameX(e) { const r = canvas.getBoundingClientRect(); return (e.clientX - r.left) / r.width * W; }
+canvas.addEventListener("pointermove", e => { if (e.pointerType === "mouse" || pointerHeld) S.targetX = gameX(e); });
+canvas.addEventListener("pointerdown", e => {
+  e.preventDefault();
+  S.targetX = gameX(e); pointerHeld = true;
+  try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
+  fire();
+});
+const release = () => { pointerHeld = false; };
+canvas.addEventListener("pointerup", release);
+canvas.addEventListener("pointercancel", release);
+
+$("btn-start").addEventListener("click", startGame);
+$("btn-next").addEventListener("click", () => {
+  if (S.level < LEVELS.length - 1) { S.level++; startLevel(); }
+  else if (allMythsMelted()) startBonus(true);
+  else showFinal();
+});
+$("btn-bonus-again").addEventListener("click", () => startBonus(B.fromGame));
+$("btn-bonus-done").addEventListener("click", () => { if (B.fromGame) showFinal(); else show("start"); });
+$("btn-again").addEventListener("click", startGame);
+$("btn-home").addEventListener("click", () => show("start"));
+$("btn-pause").addEventListener("click", e => { togglePause(); e.currentTarget.blur(); });
+$("btn-quit").addEventListener("click", () => { S.phase = "idle"; B.phase = "idle"; show("start"); });
+$("btn-sound").addEventListener("click", e => { muted = !muted; e.currentTarget.textContent = `Sound: ${muted ? "off" : "on"}`; e.currentTarget.blur(); });
+document.addEventListener("visibilitychange", () => { if (document.hidden && S.screen === "game") togglePause(true); });
+
+/* ================= EFFECTS ================= */
+function burst(x, y, r, good) {
+  const n = reduceMotion ? 18 : 70;
+  for (let i = 0; i < n; i++) {
+    const a = rand(0, 6.28), sp = rand(90, 360);
+    S.parts.push({ kind: "drop", x: x + Math.cos(a) * r * .5, y: y + Math.sin(a) * r * .5, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 80, life: rand(.5, 1.1), t: 0, r: rand(3, 9), col: Math.random() < .7 ? "#f2f6fc" : (good ? "#cfe3ff" : "#ffd0d3") });
+  }
+  for (let i = 0; i < (reduceMotion ? 6 : 16); i++) {
+    S.parts.push({ kind: "steam", x: x + rand(-r * .6, r * .6), y: y + rand(-r * .4, r * .4), vx: rand(-15, 15), vy: rand(-70, -30), life: rand(.9, 1.6), t: 0, r: rand(8, 18), col: "#ffffff" });
+  }
+}
+function popup(text, x, y, col) { S.pops.push({ text, x: clamp(x, 140, W - 140), y: clamp(y, 60, GROUND - 40), t: 0, col }); }
+
+/* ================= UPDATE ================= */
+function update(dt) {
+  S.t += dt;
+  for (const f of flakes) {
+    f.y += f.s * dt; f.x += Math.sin(S.t * .8 + f.d) * 10 * dt;
+    if (f.y > GROUND + 10) { f.y = -5; f.x = rand(0, W); }
+  }
+  if (S.screen !== "game" || S.paused) return;
+  S.phaseT += dt;
+  movePlayer(dt);
+  if (S.mode === "bonus") { updateBonus(dt); updateFx(dt); return; }
+  const L = LEVELS[S.level];
+
+  if (S.phase === "intro" && S.phaseT > 2.6) startRound();
+  if (S.phase === "reveal" && S.phaseT > 2 && (!S.gifts.some(g => g.state === "fall") || S.phaseT > 8)) nextRound();
+  updateGifts(dt);
+
+  // snowballs
+  for (const b of S.balls) {
+    if (b.state === "falling" && S.phase === "falling") {
+      b.y += b.speed * dt;
+      b.x = b.baseX + L.sway * Math.sin(S.t * 1.1 + b.ph);
+      if (b.y + b.r * .82 >= GROUND) {
+        b.y = GROUND - b.r * .82;
+        b.state = "landed";
+        if (b.isMyth) {
+          S.streak = 0;
+          popup("A myth slipped through!", b.x, b.y - b.r * .4, C.frost);
+          S.shake = reduceMotion ? 0 : 6;
+          sfx.miss();
+          endRound("missed", 0);
+        }
+      }
+    } else if (b.state === "melting") {
+      b.melt = Math.min(1, b.melt + dt / .3);
+    }
+  }
+
+  // shots
+  for (let i = S.shots.length - 1; i >= 0; i--) {
+    const s = S.shots[i];
+    s.y -= 560 * dt;
+    if (!reduceMotion) S.parts.push({ kind: "ember", x: s.x + rand(-4, 4), y: s.y + 8, vx: rand(-20, 20), vy: rand(20, 60), life: .35, t: 0, r: rand(3, 7), col: Math.random() < .5 ? "#ffb347" : "#ff6a3d" });
+    let gone = s.y < -20;
+    if (S.phase === "falling") {
+      for (const b of S.balls) {
+        if (b.state !== "falling" && b.state !== "landed") continue;
+        if (Math.hypot(s.x - b.x, s.y - b.y) < b.r) { hit(b); gone = true; break; }
+      }
+    }
+    // A hit ends the round and clears every shot, so stop looping over the old list.
+    if (S.phase !== "falling") { S.shots = []; break; }
+    if (gone) S.shots.splice(i, 1);
+  }
+
+  updateFx(dt);
+}
+function movePlayer(dt) {
+  const dir = (keys.right ? 1 : 0) - (keys.left ? 1 : 0);
+  if (dir) S.px += dir * 440 * dt;
+  else if (S.targetX != null) { const d = S.targetX - S.px; S.px += Math.sign(d) * Math.min(Math.abs(d), 800 * dt); }
+  S.px = clamp(S.px, 44, W - 44);
+  S.cool -= dt;
+  if ((keys.fire || pointerHeld) && S.cool <= 0) fire();
+}
+function updateFx(dt) {
+  // particles & popups
+  for (let i = S.parts.length - 1; i >= 0; i--) {
+    const p = S.parts[i];
+    p.t += dt; p.x += p.vx * dt; p.y += p.vy * dt;
+    if (p.kind === "drop") p.vy += 420 * dt;
+    if (p.kind === "steam") p.r += 10 * dt;
+    if (p.t >= p.life) S.parts.splice(i, 1);
+  }
+  for (let i = S.pops.length - 1; i >= 0; i--) { const p = S.pops[i]; p.t += dt; p.y -= 30 * dt; if (p.t > 1.8) S.pops.splice(i, 1); }
+  S.shake = Math.max(0, S.shake - 30 * dt);
+}
+
+/* ================= DRAW ================= */
+function drawBackdrop() {
+  const g = ctx.createLinearGradient(0, 0, 0, GROUND);
+  g.addColorStop(0, "#08122a"); g.addColorStop(.7, "#15305f"); g.addColorStop(1, "#24467f");
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+
+  for (const s of stars) {
+    ctx.globalAlpha = reduceMotion ? .7 : .45 + .45 * Math.sin(S.t * 1.6 + s.p);
+    ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 6.28); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+
+  // moon
+  ctx.fillStyle = "rgba(242,246,252,.9)"; ctx.beginPath(); ctx.arc(845, 110, 30, 0, 6.28); ctx.fill();
+  ctx.fillStyle = "#0f2148"; ctx.beginPath(); ctx.arc(858, 100, 27, 0, 6.28); ctx.fill();
+
+  // fairy-light garland across the top
+  ctx.strokeStyle = "#2b3d5c"; ctx.lineWidth = 2; ctx.beginPath();
+  const seg = 240;
+  for (let x = 0; x <= W; x += 6) { const y = 10 + 22 * Math.sin(Math.PI * ((x % seg) / seg)); x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); }
+  ctx.stroke();
+  const cols = [C.berry, C.gold, C.holly, C.blue, "#9b5cc4"];
+  let k = 0;
+  for (let x = 20; x < W; x += 40, k++) {
+    const y = 10 + 22 * Math.sin(Math.PI * ((x % seg) / seg)) + 7;
+    const on = reduceMotion || Math.sin(S.t * 2.2 + k * 1.3) > -0.3;
+    ctx.fillStyle = cols[k % 5]; ctx.globalAlpha = on ? 1 : .35;
+    if (on) { ctx.shadowColor = cols[k % 5]; ctx.shadowBlur = 12; }
+    ctx.beginPath(); ctx.ellipse(x, y, 5, 7, 0, 0, 6.28); ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+  ctx.globalAlpha = 1;
+
+  // trees
+  for (const t of trees) {
+    const base = GROUND + 6, col = t.back ? "#123a3a" : "#0f4a34";
+    ctx.fillStyle = col;
+    for (let i = 0; i < 3; i++) {
+      const w = t.h * (.55 - i * .12), top = base - t.h + i * t.h * .22, bot = base - i * t.h * .25;
+      ctx.beginPath(); ctx.moveTo(t.x, top); ctx.lineTo(t.x - w, bot); ctx.lineTo(t.x + w, bot); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = "rgba(242,246,252,.75)";
+      ctx.beginPath(); ctx.moveTo(t.x, top); ctx.lineTo(t.x - w * .28, top + t.h * .1); ctx.lineTo(t.x + w * .28, top + t.h * .1); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = col;
+    }
+    if (!t.back) { ctx.fillStyle = C.gold; star(t.x, base - t.h - 4, 6); }
+  }
+
+  // ambient snowfall
+  ctx.fillStyle = "rgba(255,255,255,.85)";
+  for (const f of flakes) { ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, 6.28); ctx.fill(); }
+
+  // snowy ground
+  const gg = ctx.createLinearGradient(0, GROUND, 0, H);
+  gg.addColorStop(0, "#eef4fc"); gg.addColorStop(1, "#b8cbe6");
+  ctx.fillStyle = gg; ctx.beginPath(); ctx.moveTo(0, H); ctx.lineTo(0, GROUND + 8);
+  for (let x = 0; x <= W; x += 20) ctx.lineTo(x, GROUND + 4 * Math.sin(x / 90) + 2);
+  ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
+}
+function star(x, y, r) {
+  ctx.beginPath();
+  for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * .45 : r; ctx.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); }
+  ctx.closePath(); ctx.fill();
+}
+function wrap(text, maxW) {
+  const words = text.split(" "), lines = []; let line = "";
+  for (const w of words) {
+    const test = line ? line + " " + w : w;
+    if (ctx.measureText(test).width > maxW && line) { lines.push(line); line = w; } else line = test;
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+function layout(b) {
+  for (let fs = 19; fs >= 12; fs--) {
+    ctx.font = `600 ${fs}px ${FONT}`;
+    const lines = wrap(b.text, b.r * 1.52);
+    if (lines.length * fs * 1.2 <= b.r * 1.42) { b.fs = fs; b.lines = lines; return; }
+  }
+  b.fs = 12; ctx.font = `600 12px ${FONT}`; b.lines = wrap(b.text, b.r * 1.6);
+}
+function drawBall(b) {
+  let s = 1, a = 1;
+  if (b.state === "melting") { s = 1 + .3 * b.melt; a = 1 - b.melt; }
+  if (a <= 0.01) return;
+  const r = b.r * s, x = b.x, y = b.y;
+  ctx.save(); ctx.globalAlpha = a;
+
+  ctx.fillStyle = "rgba(4,10,25,.35)";
+  ctx.beginPath(); ctx.ellipse(x + 6, y + 10, r, r, 0, 0, 6.28); ctx.fill();
+
+  const g = ctx.createRadialGradient(x - r * .35, y - r * .4, r * .1, x, y, r);
+  if (b.wrong) { g.addColorStop(0, "#ffffff"); g.addColorStop(.6, "#ffe1e3"); g.addColorStop(1, "#e79aa0"); }
+  else { g.addColorStop(0, "#ffffff"); g.addColorStop(.6, "#eef4fb"); g.addColorStop(1, "#b5cae6"); }
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, 6.28); ctx.fill();
+  ctx.strokeStyle = "rgba(255,255,255,.8)"; ctx.lineWidth = 2; ctx.stroke();
+
+  ctx.fillStyle = "rgba(160,186,222,.35)";
+  for (const d of b.dots) { ctx.beginPath(); ctx.arc(x + Math.cos(d.a) * r * d.d, y + Math.sin(d.a) * r * d.d, d.r * s, 0, 6.28); ctx.fill(); }
+
+  if (b.state !== "melting") {
+    if (!b.lines) layout(b);
+    const fs = b.fs * s;
+    ctx.font = `600 ${fs}px ${FONT}`;
+    ctx.fillStyle = C.ink; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    const lh = fs * 1.2, y0 = y - (b.lines.length - 1) * lh / 2;
+    b.lines.forEach((ln, i) => ctx.fillText(ln, x, y0 + i * lh));
+  }
+
+  if (b.tag) {
+    const ty = Math.max(26, y - r - 16), good = b.tag === "TRUE";
+    ctx.font = `700 15px ${FONT}`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    const tw = ctx.measureText(b.tag).width + 26;
+    ctx.fillStyle = good ? C.holly : C.berry;
+    ctx.beginPath(); ctx.roundRect(x - tw / 2, ty - 14, tw, 28, 8); ctx.fill();
+    ctx.fillStyle = "#ffffff"; ctx.fillText(b.tag, x, ty + 1);
+  }
+  ctx.restore();
+}
+function drawPlayer() {
+  const x = S.px, y = GROUND + 6;
+  // sled runner
+  ctx.strokeStyle = C.gold; ctx.lineWidth = 4; ctx.lineCap = "round";
+  ctx.beginPath(); ctx.moveTo(x - 40, y + 38); ctx.lineTo(x + 34, y + 38); ctx.quadraticCurveTo(x + 48, y + 38, x + 46, y + 26); ctx.stroke();
+  ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x - 24, y + 30); ctx.lineTo(x - 24, y + 38); ctx.moveTo(x + 24, y + 30); ctx.lineTo(x + 24, y + 38); ctx.stroke();
+  // fuel tank
+  ctx.fillStyle = C.holly; ctx.beginPath(); ctx.roundRect(x - 30, y - 16, 20, 22, 6); ctx.fill();
+  ctx.fillStyle = C.gold; ctx.fillRect(x - 30, y - 8, 20, 4);
+  // body
+  ctx.fillStyle = C.berry; ctx.beginPath(); ctx.roundRect(x - 34, y, 68, 32, 10); ctx.fill();
+  ctx.fillStyle = C.gold; ctx.fillRect(x - 34, y + 12, 68, 6);
+  // bow
+  ctx.fillStyle = C.gold;
+  ctx.beginPath(); ctx.ellipse(x - 7, y + 15, 7, 5, -.5, 0, 6.28); ctx.ellipse(x + 7, y + 15, 7, 5, .5, 0, 6.28); ctx.fill();
+  ctx.fillStyle = "#c98f22"; ctx.beginPath(); ctx.arc(x, y + 15, 3.5, 0, 6.28); ctx.fill();
+  if (S.mode === "bonus") { drawCannon(x, y); return; }
+  // nozzle
+  const ng = ctx.createLinearGradient(x - 8, 0, x + 8, 0);
+  ng.addColorStop(0, "#7f8ea8"); ng.addColorStop(.5, "#e3e9f3"); ng.addColorStop(1, "#7f8ea8");
+  ctx.fillStyle = ng; ctx.fillRect(x - 7, y - 32, 14, 34);
+  ctx.fillStyle = C.gold; ctx.fillRect(x - 10, y - 36, 20, 6);
+  // pilot flame
+  const fl = 1 + (reduceMotion ? 0 : .25 * Math.sin(S.t * 30));
+  const pg = ctx.createRadialGradient(x, y - 42, 1, x, y - 42, 10 * fl);
+  pg.addColorStop(0, "#fff3b0"); pg.addColorStop(.5, "#ffae3d"); pg.addColorStop(1, "rgba(255,90,40,0)");
+  ctx.fillStyle = pg; ctx.beginPath(); ctx.ellipse(x, y - 44, 7 * fl, 11 * fl, 0, 0, 6.28); ctx.fill();
+}
+function drawShots() {
+  for (const s of S.shots) {
+    const g = ctx.createRadialGradient(s.x, s.y, 1, s.x, s.y, 16);
+    g.addColorStop(0, "#fffbe0"); g.addColorStop(.35, "#ffc247"); g.addColorStop(.7, "rgba(255,100,40,.7)"); g.addColorStop(1, "rgba(255,80,30,0)");
+    ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(s.x, s.y, 12, 18, 0, 0, 6.28); ctx.fill();
+  }
+}
+function drawParts() {
+  for (const p of S.parts) {
+    const k = 1 - p.t / p.life;
+    ctx.globalAlpha = p.kind === "steam" ? k * .35 : k;
+    ctx.fillStyle = p.col; ctx.beginPath(); ctx.arc(p.x, p.y, p.r * (p.kind === "ember" ? k : 1), 0, 6.28); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+function drawPops() {
+  ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  for (const p of S.pops) {
+    ctx.globalAlpha = clamp(1.8 - p.t, 0, 1);
+    ctx.font = `700 26px ${FONT}`;
+    ctx.lineWidth = 5; ctx.strokeStyle = "rgba(8,18,42,.85)"; ctx.strokeText(p.text, p.x, p.y);
+    ctx.fillStyle = p.col; ctx.fillText(p.text, p.x, p.y);
+  }
+  ctx.globalAlpha = 1;
+}
+function panel(lines) {
+  ctx.fillStyle = "rgba(8,18,42,.82)";
+  ctx.beginPath(); ctx.roundRect(W / 2 - 280, H / 2 - 120, 560, 210, 20); ctx.fill();
+  ctx.strokeStyle = C.gold; ctx.lineWidth = 2; ctx.stroke();
+  ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  for (const l of lines) { ctx.font = l.font; ctx.fillStyle = l.col; ctx.fillText(l.text, W / 2, l.y); }
+}
+function draw() {
+  ctx.save();
+  if (S.shake > 0) ctx.translate(rand(-S.shake, S.shake), rand(-S.shake, S.shake));
+  drawBackdrop();
+  if (S.mode === "bonus") { drawBonus(); ctx.restore(); return; }
+  S.balls.forEach(drawBall);
+  S.gifts.forEach(drawGift);
+  drawShots();
+  drawPlayer();
+  drawParts();
+  drawPops();
+  if (S.phase === "intro") {
+    const L = LEVELS[S.level];
+    panel([
+      { text: `LEVEL ${S.level + 1} OF 3`, font: `600 18px ${FONT}`, col: C.gold, y: H / 2 - 78 },
+      { text: L.name, font: `700 64px ${DISPLAY}`, col: C.snow, y: H / 2 - 22 },
+      { text: "Melt the myth in each pair of snowballs", font: `500 20px ${FONT}`, col: C.frost, y: H / 2 + 36 }
+    ]);
+  }
+  if (S.paused) {
+    panel([
+      { text: "Paused", font: `700 60px ${DISPLAY}`, col: C.snow, y: H / 2 - 40 },
+      { text: "Press P or Resume to carry on", font: `500 20px ${FONT}`, col: C.frost, y: H / 2 + 30 }
+    ]);
+  }
+  ctx.restore();
+}
+
+/* ================= FIVE PILLARS PRESENTS ================= */
+function updateGifts(dt) {
+  for (let i = S.gifts.length - 1; i >= 0; i--) {
+    const g = S.gifts[i];
+    g.t += dt;
+    if (g.kind === "coal") {
+      g.vy += 520 * dt; g.x += g.vx * dt; g.y += g.vy * dt; g.spin += dt * 8;
+      if (g.y >= GROUND - 2) { puff(g.x, GROUND, "#3a3940", 10); S.gifts.splice(i, 1); }
+      continue;
+    }
+    if (g.state === "fall") {
+      g.vy = Math.min(125, g.vy + 260 * dt);   // parachute caps the speed
+      g.y += g.vy * dt;
+      g.x = clamp(g.x + Math.sin(g.t * 2.2) * 28 * dt, 30, W - 30);
+      if (g.y + 18 >= GROUND - 8 && Math.abs(g.x - S.px) < 58) { catchGift(g); S.gifts.splice(i, 1); continue; }
+      if (g.y + 18 >= GROUND + 8) { g.state = "landed"; g.y = GROUND - 10; g.t = 0; popup("Present missed", g.x, GROUND - 90, C.frost); }
+    } else if (g.t > 1.4) S.gifts.splice(i, 1);
+  }
+}
+function catchGift(g) {
+  S.score += 25; S.levelScores[S.level] += 25;
+  if (S.cur && S.cur.pillar === g.pillar) S.cur.caught = true;
+  popup(`Pillar ${g.pillar.n} caught! +25`, g.x, GROUND - 110, C.gold);
+  for (let i = 0; i < (reduceMotion ? 6 : 24); i++) {
+    const a = rand(0, 6.28), sp = rand(60, 220);
+    S.parts.push({ kind: "ember", x: g.x, y: g.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 60, life: rand(.4, .8), t: 0, r: rand(3, 6), col: [g.pillar.col, C.gold, "#ffffff"][i % 3] });
+  }
+  tone(784, 784, .1, "sine", .06); tone(1047, 1047, .2, "sine", .06, .08);
+  updateHUD();
+}
+function drawGift(g) {
+  if (g.kind === "coal") { drawCoal(g); return; }
+  const x = g.x, y = g.y, col = g.pillar.col;
+  ctx.save();
+  ctx.globalAlpha = g.state === "landed" ? clamp(1 - g.t / 1.4, 0, 1) : 1;
+  if (g.state === "fall") {
+    ctx.strokeStyle = "rgba(242,246,252,.75)"; ctx.lineWidth = 1.3;
+    ctx.beginPath();
+    ctx.moveTo(x - 18, y - 16); ctx.lineTo(x - 30, y - 50);
+    ctx.moveTo(x + 18, y - 16); ctx.lineTo(x + 30, y - 50);
+    ctx.moveTo(x, y - 18); ctx.lineTo(x, y - 54);
+    ctx.stroke();
+    ctx.fillStyle = "#f2f6fc";
+    ctx.beginPath(); ctx.moveTo(x - 34, y - 50); ctx.quadraticCurveTo(x, y - 92, x + 34, y - 50); ctx.quadraticCurveTo(x, y - 60, x - 34, y - 50); ctx.fill();
+    ctx.fillStyle = col;
+    ctx.beginPath(); ctx.moveTo(x - 12, y - 56); ctx.quadraticCurveTo(x, y - 84, x + 12, y - 56); ctx.closePath(); ctx.fill();
+  }
+  // box, lid, ribbon, bow
+  ctx.fillStyle = col; ctx.beginPath(); ctx.roundRect(x - 20, y - 14, 40, 32, 5); ctx.fill();
+  ctx.fillStyle = "rgba(0,0,0,.18)"; ctx.fillRect(x - 20, y - 14, 40, 6);
+  ctx.fillStyle = col; ctx.beginPath(); ctx.roundRect(x - 23, y - 20, 46, 9, 3); ctx.fill();
+  ctx.fillStyle = "#ffffff"; ctx.fillRect(x - 3.5, y - 20, 7, 38); ctx.fillRect(x - 20, y - 1, 40, 6);
+  ctx.beginPath(); ctx.ellipse(x - 8, y - 24, 8, 5, -.4, 0, 6.28); ctx.ellipse(x + 8, y - 24, 8, 5, .4, 0, 6.28); ctx.fill();
+  // gift tag
+  ctx.font = `700 11px ${FONT}`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.roundRect(x + 10, y + 6, 24, 13, 3); ctx.fill();
+  ctx.fillStyle = C.ink; ctx.fillText("NHC", x + 22, y + 13);
+  if (g.state === "fall") {
+    const label = `Pillar ${g.pillar.n}: ${g.pillar.name}`;
+    ctx.font = `600 15px ${FONT}`;
+    const lx = clamp(x, ctx.measureText(label).width / 2 + 12, W - ctx.measureText(label).width / 2 - 12);
+    const ly = y - 104 < 62 ? y + 36 : y - 104;   // keep clear of the fairy lights
+    ctx.lineWidth = 4; ctx.strokeStyle = "rgba(8,18,42,.9)"; ctx.strokeText(label, lx, ly);
+    ctx.fillStyle = "#ffffff"; ctx.fillText(label, lx, ly);
+  }
+  ctx.restore();
+}
+
+/* ================= SECRET BONUS ROUND: SANTA SIEGE ================= */
+const BEST_KEY = "snowball-myth-melter:santa-best";
+function readBest() { try { return Number(localStorage.getItem(BEST_KEY)) || 0; } catch (_) { return 0; } }
+function writeBest(v) { try { localStorage.setItem(BEST_KEY, String(v)); } catch (_) {} }
+const B = { phase: "idle", t: 0, phaseT: 0, hits: 0, pts: 0, lives: 3, combo: 0, bestCombo: 0, siege: 1, santas: [], coal: [], spawnT: 0, inv: 0, fromGame: false, lastScore: null };
+const bonusScore = () => B.pts + Math.floor(B.t);
+// Pressure builds mainly from hits (every 5 hits = +1 siege level) and slowly with time.
+const pressure = () => B.hits / 5 + B.t / 30;
+function fmtTime(t) { return `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, "0")}`; }
+const SIEGE_NEWS = { 2: "Sprinter Santas!", 3: "Sleigh Santas, and they're throwing coal!", 4: "Big Santas! 3 hits each" };
+function allMythsMelted() {
+  const r = S.results.flat();
+  return r.length === LEVELS.length * ROUNDS && r.every(x => x.outcome === "correct");
+}
+
+function startBonus(fromGame) {
+  Object.assign(B, { phase: "intro", t: 0, phaseT: 0, hits: 0, pts: 0, lives: 3, combo: 0, bestCombo: 0, siege: 1, santas: [], coal: [], spawnT: .4, inv: 0, fromGame });
+  S.mode = "bonus"; S.balls = []; S.gifts = []; S.shots = []; S.parts = []; S.pops = [];
+  S.paused = false; S.shake = 0; S.px = W / 2; S.targetX = null; S.cool = 0;
+  $("btn-pause").textContent = "Pause";
+  show("game");
+  updateHUD();
+}
+
+function spawnSanta() {
+  const P = pressure(), sp = 1 + Math.min(P * .1, 2.2), roll = Math.random();
+  let type = "normal";
+  if (B.siege >= 4 && roll < .12) type = "big";
+  else if (B.siege >= 3 && roll < .32) type = "sleigh";
+  else if (B.siege >= 2 && roll < .55) type = "sprint";
+  const s = { type, t: 0, ph: rand(0, 6.28), state: "live", hp: type === "big" ? 3 : 1, flash: 0, dive: 0, diveT: rand(2.5, 6), coalT: rand(1.5, 3.5), rot: 0 };
+  if (type === "sleigh") {
+    const fromLeft = Math.random() < .5;
+    Object.assign(s, { r: 24, x: fromLeft ? -40 : W + 40, y: rand(80, 170), vx: (fromLeft ? 1 : -1) * 120 * sp, vy: 7 * sp });
+  } else {
+    const [r, vy, amp, freq] = { normal: [24, 34, rand(25, 70), rand(1.2, 2.2)], sprint: [21, 72, rand(5, 25), rand(2, 3)], big: [38, 22, 30, 1] }[type];
+    Object.assign(s, { r, vy: vy * sp, amp, freq, baseX: rand(70, W - 70), y: -40 });
+    s.x = s.baseX;
+  }
+  B.santas.push(s);
+}
+
+function puff(x, y, col, n) {
+  for (let i = 0; i < (reduceMotion ? 4 : n); i++) {
+    const a = rand(0, 6.28), sp = rand(30, 150);
+    S.parts.push({ kind: "drop", x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 40, life: rand(.3, .7), t: 0, r: rand(2, 4.5), col });
+  }
+}
+
+function loseLife(x, y, msg) {
+  B.lives = Math.max(0, B.lives - 1);
+  B.combo = 0;
+  popup(msg, x, y, "#ff9aa0");
+  S.shake = reduceMotion ? 0 : 9;
+  sfx.wrong();
+  if (B.lives <= 0 && B.phase === "play") { B.phase = "over"; B.phaseT = 0; S.shots = []; sfx.miss(); }
+}
+
+function hitSanta(s) {
+  puff(s.x, s.y, "#ffffff", 12);
+  s.hp--;
+  sfx.thud();
+  if (s.hp > 0) { s.flash = .15; return; }
+  s.state = "tumble"; s.t = 0; s.vy = -160; s.vx = rand(-90, 90); s.spin = rand(-8, 8);
+  B.hits++; B.combo++; B.bestCombo = Math.max(B.bestCombo, B.combo);
+  B.pts += 10 + 2 * Math.min(B.combo - 1, 20) + (s.type === "big" ? 20 : 0);
+  if (B.combo % 5 === 0) popup(`Combo x${B.combo}!`, s.x, s.y - 20, C.gold);
+  else if (Math.random() < .3) popup("Ho ho NO!", s.x, s.y - 20, C.snow);
+}
+
+function updateBonus(dt) {
+  B.phaseT += dt;
+  if (B.phase === "intro") { if (B.phaseT > 3) { B.phase = "play"; B.phaseT = 0; } updateHUD(); return; }
+  if (B.phase === "over") { if (B.phaseT > 3) showBonusResults(); return; }
+  if (B.phase !== "play") return;
+  B.t += dt;
+  B.inv = Math.max(0, B.inv - dt);
+
+  const P = pressure();
+  const lvl = 1 + Math.floor(P);
+  if (lvl > B.siege) {
+    B.siege = lvl;
+    popup(`Siege level ${lvl}!`, W / 2, 190, C.gold);
+    if (SIEGE_NEWS[lvl]) popup(SIEGE_NEWS[lvl], W / 2, 232, C.snow);
+    sfx.melt();
+  }
+
+  // spawning: faster, and more on screen at once, as pressure builds
+  const live = B.santas.reduce((n, s) => n + (s.state === "live"), 0);
+  B.spawnT -= dt;
+  if (B.spawnT <= 0 && live < Math.min(36, 3 + Math.floor(P * 1.6))) {
+    spawnSanta();
+    B.spawnT = Math.max(.28, 2 * Math.pow(.86, P)) * rand(.7, 1.3);
+  }
+
+  // Santas
+  for (let i = B.santas.length - 1; i >= 0; i--) {
+    const s = B.santas[i];
+    s.t += dt; s.flash = Math.max(0, s.flash - dt);
+    if (s.state === "tumble") {
+      s.vy += 500 * dt; s.x += s.vx * dt; s.y += s.vy * dt; s.rot += s.spin * dt;
+      if (s.t > 1.2) B.santas.splice(i, 1);
+      continue;
+    }
+    if (s.type === "sleigh") {
+      s.x += s.vx * dt; s.y += s.vy * dt + Math.cos(s.t * 3) * 25 * dt;
+      if ((s.vx > 0 && s.x > W + 45) || (s.vx < 0 && s.x < -45)) { s.vx *= -1; s.y += 55; }
+    } else {
+      s.diveT -= dt;
+      if (s.diveT <= 0) { s.dive = .7; s.diveT = rand(3, 7); }
+      s.dive -= dt;
+      s.y += s.vy * (s.dive > 0 ? 2.6 : 1) * dt;
+      s.x = clamp(s.baseX + s.amp * Math.sin(s.t * s.freq + s.ph), s.r, W - s.r);
+    }
+    // coal throwing from siege level 3
+    if (B.siege >= 3 && s.y > 30 && s.y < GROUND - 160 && s.x > 0 && s.x < W) {
+      s.coalT -= dt;
+      if (s.coalT <= 0) {
+        s.coalT = rand(2.5, 5) / Math.min(2.2, 1 + (P - 2) * .08);
+        const vy = rand(150, 210), tt = (GROUND - s.y) / vy;
+        B.coal.push({ x: s.x, y: s.y + s.r, vy, vx: (S.px - s.x) / tt * rand(.4, 1), spin: rand(0, 6) });
+      }
+    }
+    if (s.y + s.r * .6 >= GROUND) {
+      B.santas.splice(i, 1);
+      puff(s.x, GROUND - 6, "#eef4fc", 18);
+      loseLife(s.x, GROUND - 70, "A Santa got through!");
+      if (B.phase !== "play") return;
+    }
+  }
+
+  // coal
+  for (let i = B.coal.length - 1; i >= 0; i--) {
+    const c = B.coal[i];
+    c.x += c.vx * dt; c.y += c.vy * dt; c.spin += dt * 6;
+    if (B.inv <= 0 && Math.hypot(c.x - S.px, c.y - (GROUND + 10)) < 34) {
+      B.coal.splice(i, 1);
+      B.inv = 1.4;
+      puff(c.x, c.y, "#3a3940", 12);
+      loseLife(S.px, GROUND - 90, "Hit by coal!");
+      if (B.phase !== "play") return;
+      continue;
+    }
+    if (c.y > GROUND + 8) { B.coal.splice(i, 1); puff(c.x, GROUND + 4, "#3a3940", 6); }
+  }
+
+  // snowballs
+  for (let i = S.shots.length - 1; i >= 0; i--) {
+    const sh = S.shots[i];
+    sh.y -= 640 * dt;
+    let gone = false;
+    for (const s of B.santas) {
+      if (s.state === "live" && Math.hypot(sh.x - s.x, sh.y - s.y) < s.r + 8) { hitSanta(s); gone = true; break; }
+    }
+    if (!gone) {
+      for (let j = B.coal.length - 1; j >= 0; j--) {
+        const c = B.coal[j];
+        if (Math.hypot(sh.x - c.x, sh.y - c.y) < 16) { B.coal.splice(j, 1); B.pts += 2; puff(c.x, c.y, "#3a3940", 8); gone = true; break; }
+      }
+    }
+    if (!gone && sh.y < -20) { gone = true; B.combo = 0; }
+    if (gone) S.shots.splice(i, 1);
+  }
+  updateHUD();
+}
+
+function showBonusResults() {
+  const score = bonusScore(), best = readBest();
+  if (score > best) writeBest(score);
+  B.lastScore = score; B.phase = "done";
+  $("bon-score").textContent = score;
+  $("bon-time").textContent = fmtTime(B.t);
+  $("bon-hits").textContent = B.hits;
+  $("bon-siege").textContent = B.siege;
+  $("bon-combo").textContent = B.bestCombo;
+  $("bon-best").textContent = score > best
+    ? (best ? `New personal best! Previous best: ${best}` : "Your first Santa Siege score. Now beat it!")
+    : `Personal best: ${best}`;
+  $("btn-bonus-done").textContent = B.fromGame ? "See final results" : "Back to start";
+  show("bonus");
+  $("btn-bonus-again").focus({ preventScroll: true });
+}
+
+/* --- bonus drawing --- */
+function circ(x, y, r) { ctx.beginPath(); ctx.arc(x, y, r, 0, 6.28); ctx.fill(); }
+function drawSanta(s) {
+  ctx.save();
+  ctx.translate(s.x, s.y);
+  if (s.state === "tumble") { ctx.rotate(s.rot); ctx.globalAlpha = clamp(1.2 - s.t, 0, 1); }
+  const k = s.r / 24; ctx.scale(k, k);
+  if (s.type === "sleigh") {
+    ctx.fillStyle = "#8a3f1c"; ctx.beginPath(); ctx.roundRect(-30, 8, 60, 18, 7); ctx.fill();
+    ctx.strokeStyle = C.gold; ctx.lineWidth = 3; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(-30, 30); ctx.lineTo(26, 30); ctx.quadraticCurveTo(36, 30, 34, 20); ctx.stroke();
+  }
+  if (s.type === "sprint" && s.state === "live") {
+    ctx.strokeStyle = "rgba(242,246,252,.45)"; ctx.lineWidth = 2;
+    ctx.beginPath(); for (const dx of [-10, 0, 10]) { ctx.moveTo(dx, -36); ctx.lineTo(dx, -48); } ctx.stroke();
+  }
+  // body, arms raised, mittens, belt
+  ctx.fillStyle = C.berry; circ(0, 10, 15); circ(-16, 2, 5.5); circ(16, 2, 5.5);
+  ctx.fillStyle = "#1b1b1b"; circ(-18, -4, 4); circ(18, -4, 4);
+  ctx.fillRect(-15, 11, 30, 5);
+  ctx.fillStyle = C.gold; ctx.fillRect(-4, 10, 8, 7);
+  // face and beard
+  ctx.fillStyle = "#f4c7a5"; circ(0, -8, 9);
+  ctx.fillStyle = "#ffffff"; ctx.beginPath();
+  ctx.moveTo(-10, -8); ctx.quadraticCurveTo(-11, 8, 0, 10); ctx.quadraticCurveTo(11, 8, 10, -8); ctx.quadraticCurveTo(0, -1, -10, -8); ctx.fill();
+  // mischievous eyes and bushy brows
+  ctx.fillStyle = "#1b1b1b"; circ(-3.5, -9, 1.4); circ(3.5, -9, 1.4);
+  ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 2; ctx.lineCap = "round";
+  ctx.beginPath(); ctx.moveTo(-6.5, -13.5); ctx.lineTo(-1.5, -11.5); ctx.moveTo(6.5, -13.5); ctx.lineTo(1.5, -11.5); ctx.stroke();
+  ctx.fillStyle = "#e58f7a"; circ(0, -6, 1.8);
+  // hat
+  ctx.fillStyle = C.berry; ctx.beginPath();
+  ctx.moveTo(-9, -15); ctx.quadraticCurveTo(2, -32, 14, -26); ctx.lineTo(9, -15); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.roundRect(-11, -18, 22, 5, 2.5); ctx.fill(); circ(14, -26, 3.5);
+  if (s.flash > 0) { ctx.globalAlpha = .6; ctx.fillStyle = "#ffffff"; circ(0, 0, 24); ctx.globalAlpha = 1; }
+  if (s.type === "big" && s.state === "live") { ctx.fillStyle = C.gold; for (let i = 0; i < s.hp; i++) circ(-8 + i * 8, -38, 2.6); }
+  ctx.restore();
+}
+function drawCoal(c) {
+  ctx.save(); ctx.translate(c.x, c.y); ctx.rotate(c.spin);
+  ctx.fillStyle = "#26252b"; ctx.beginPath();
+  for (let i = 0; i < 8; i++) { const a = i / 8 * 6.28, rr = i % 2 ? 7 : 9.5; ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); }
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle = "rgba(255,120,40,.85)"; circ(2, 1, 2.2);
+  ctx.restore();
+}
+function drawCannon(x, y) {
+  const g = ctx.createLinearGradient(x - 12, 0, x + 12, 0);
+  g.addColorStop(0, "#5f7fae"); g.addColorStop(.5, "#dbe7f7"); g.addColorStop(1, "#5f7fae");
+  ctx.fillStyle = g; ctx.beginPath(); ctx.roundRect(x - 12, y - 34, 24, 38, 5); ctx.fill();
+  ctx.fillStyle = C.gold; ctx.fillRect(x - 14, y - 38, 28, 6); ctx.fillRect(x - 12, y - 18, 24, 3);
+  if (S.cool <= 0) { ctx.fillStyle = "#ffffff"; circ(x, y - 43, 8); }
+}
+function drawLives() {
+  const cols = [C.berry, C.holly, C.gold];
+  for (let i = 0; i < 3; i++) {
+    const x = 20 + i * 34, y = 52;
+    ctx.globalAlpha = i < B.lives ? 1 : .2;
+    ctx.fillStyle = cols[i]; ctx.fillRect(x, y, 24, 20);
+    ctx.fillStyle = C.snow; ctx.fillRect(x + 10, y, 4, 20); ctx.fillRect(x, y + 7, 24, 4);
+    ctx.beginPath(); ctx.ellipse(x + 8, y - 3, 5, 3, -.4, 0, 6.28); ctx.ellipse(x + 16, y - 3, 5, 3, .4, 0, 6.28); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+function drawBonus() {
+  B.coal.forEach(drawCoal);
+  B.santas.forEach(drawSanta);
+  for (const sh of S.shots) {
+    ctx.fillStyle = "rgba(4,10,25,.3)"; circ(sh.x + 3, sh.y + 4, 8);
+    ctx.fillStyle = "#ffffff"; circ(sh.x, sh.y, 8);
+    ctx.fillStyle = "#d3e1f4"; circ(sh.x + 2.5, sh.y + 2.5, 3.5);
+  }
+  if (!(B.inv > 0 && Math.floor(B.inv * 10) % 2)) drawPlayer();
+  drawParts();
+  drawPops();
+  drawLives();
+  if (B.phase === "intro") {
+    panel([
+      { text: "SECRET BONUS ROUND", font: `600 18px ${FONT}`, col: C.gold, y: H / 2 - 78 },
+      { text: "Santa Siege", font: `700 64px ${DISPLAY}`, col: C.snow, y: H / 2 - 22 },
+      { text: "Rogue Santas incoming. Hold them off as long as you can!", font: `500 19px ${FONT}`, col: C.frost, y: H / 2 + 36 }
+    ]);
+  }
+  if (B.phase === "over") {
+    panel([
+      { text: "Overwhelmed!", font: `700 60px ${DISPLAY}`, col: C.snow, y: H / 2 - 40 },
+      { text: `You held out for ${fmtTime(B.t)} and hit ${B.hits} Santas`, font: `500 20px ${FONT}`, col: C.frost, y: H / 2 + 30 }
+    ]);
+  }
+  if (S.paused) {
+    panel([
+      { text: "Paused", font: `700 60px ${DISPLAY}`, col: C.snow, y: H / 2 - 40 },
+      { text: "Press P or Resume to carry on", font: `500 20px ${FONT}`, col: C.frost, y: H / 2 + 30 }
+    ]);
+  }
+}
+
+/* Testing shortcut: add #santa to the link to jump straight to the bonus round */
+function checkHash() { if (location.hash === "#santa") startBonus(false); }
+window.addEventListener("hashchange", checkHash);
+
+/* ================= LOOP ================= */
+let last = performance.now();
+function frame(now) {
+  requestAnimationFrame(frame); // schedule first so one bad frame can never freeze the game
+  const dt = Math.min(.05, (now - last) / 1000); last = now;
+  try {
+    update(dt);
+    if (S.screen === "game") draw();
+  } catch (err) {
+    console.error(err);
+  }
+}
+requestAnimationFrame(frame);
+checkHash();
+})();
+</script>
+</body>
+</html>
