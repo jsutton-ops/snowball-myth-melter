@@ -220,7 +220,7 @@ canvas#game {
           <li>Read both snowballs as they fall from the sky.</li>
           <li>Move the flamethrower with <kbd>←</kbd> <kbd>→</kbd> (or <kbd>A</kbd> <kbd>D</kbd>), or by moving your mouse over the game.</li>
           <li>Fire with <kbd>Space</kbd> or a mouse click. Melt <b>only the myth</b>.</li>
-          <li>Every melted myth bursts open to release one of NHC's <b>Five Pillars</b> as a present. Catch it on your sled for a bonus.</li>
+          <li>Every melted myth bursts open to release one of NHC's <b>Five Pillars</b> as a present, which joins the present shelf at the bottom of the screen. Catch it on your sled on the way down for a bonus.</li>
           <li>Each level has 5 rounds. Afterwards, a summary explains why every myth is wrong and every truth is right.</li>
         </ol>
         <p style="color:var(--frost);font-size:.92rem">Press <kbd>P</kbd> to pause. On a touchscreen, tap or drag on the game to aim and fire.</p>
@@ -277,12 +277,12 @@ canvas#game {
     <div class="stats">
       <div><small>Level score</small><strong id="sum-level-score">0</strong></div>
       <div><small>Myths melted</small><strong id="sum-melted">0 / 5</strong></div>
-      <div><small>Pillars caught</small><strong id="sum-pillars">0 / 5</strong></div>
+      <div><small>Presents caught</small><strong id="sum-pillars">0 / 5</strong></div>
       <div><small>Total score</small><strong id="sum-total">0</strong></div>
     </div>
-    <div class="pillars" id="sum-pillar-row" aria-label="Five Pillars caught this level"></div>
+    <div class="pillars" id="sum-pillar-row" aria-label="Five Pillars collected this level"></div>
     <div class="pairs" id="sum-pairs"></div>
-    <p class="secret-note" id="sum-secret" hidden style="padding-top:24px">Every myth melted, with no truths harmed. Something is stirring at the North Pole…</p>
+    <p class="secret-note" id="sum-secret" hidden style="padding-top:24px">You filled the present shelf and unlocked the secret Santa Siege round!</p>
     <div class="next-row">
       <button class="btn" id="btn-next" type="button">Continue</button>
     </div>
@@ -322,7 +322,7 @@ canvas#game {
       <p class="rank" id="fin-rank"></p>
       <p class="rank-note" id="fin-note"></p>
       <table class="breakdown">
-        <thead><tr><th>Level</th><th>Myths melted</th><th>Pillars caught</th><th>Points</th></tr></thead>
+        <thead><tr><th>Level</th><th>Myths melted</th><th>Presents caught</th><th>Points</th></tr></thead>
         <tbody id="fin-rows"></tbody>
       </table>
       <p class="secret-note" id="fin-bonus" hidden></p>
@@ -491,7 +491,7 @@ const screens = { start: $("screen-start"), game: $("screen-game"), summary: $("
 const S = {
   screen: "start", mode: "myth", level: 0, round: 0, score: 0, levelScores: [0, 0, 0], streak: 0,
   results: [[], [], []], order: [], phase: "idle", t: 0, phaseT: 0,
-  balls: [], shots: [], parts: [], pops: [], gifts: [], cur: null,
+  balls: [], shots: [], parts: [], pops: [], gifts: [], cur: null, shelf: Array(15).fill(null),
   px: W / 2, targetX: null, cool: 0, paused: false, shake: 0
 };
 const keys = { left: false, right: false, fire: false };
@@ -531,6 +531,7 @@ const sfx = {
 /* ================= FLOW ================= */
 function startGame() {
   S.score = 0; S.levelScores = [0, 0, 0]; S.results = [[], [], []]; S.streak = 0; S.level = 0;
+  S.shelf = Array(15).fill(null);
   B.lastScore = null; B.fromGame = false;
   startLevel();
 }
@@ -576,13 +577,16 @@ function endRound(outcome, pts) {
 }
 function nextRound() {
   S.round++;
-  if (S.round >= ROUNDS) showSummary(); else startRound();
+  if (S.round < ROUNDS) startRound();
+  // The 15th present fills the shelf: burst straight into Santa Siege. Level 3 feedback follows it.
+  else if (S.level === LEVELS.length - 1 && shelfFull()) startBonus(true, true);
+  else showSummary();
 }
 
 function hit(b) {
   b.state = "melting"; b.melt = 0;
   burst(b.x, b.y, b.r, b.isMyth);
-  if (b.isMyth) S.gifts.push({ kind: "present", pillar: PILLARS[S.round], x: b.x, y: b.y, vy: -60, t: 0, state: "fall" });
+  if (b.isMyth) S.gifts.push({ kind: "present", pillar: PILLARS[S.round], slot: S.level * ROUNDS + S.round, x: b.x, y: b.y, vy: -60, t: 0, sc: 1, state: "fall" });
   else S.gifts.push({ kind: "coal", x: b.x, y: b.y, vx: rand(-50, 50), vy: -140, spin: 0 });
   if (b.isMyth) {
     S.streak++;
@@ -631,8 +635,8 @@ function showSummary() {
   $("sum-melted").textContent = `${melted} / ${ROUNDS}`;
   $("sum-pillars").textContent = `${res.filter(r => r.caught).length} / ${ROUNDS}`;
   $("sum-pillar-row").innerHTML = PILLARS.map((p, i) => {
-    const got = res[i] && res[i].caught;
-    return `<span class="pillar${got ? "" : " missed"}" style="--c:${p.col}" title="${got ? "Caught" : "Not caught"}"><i>${got ? p.n : ""}</i>Pillar ${p.n}: ${esc(p.name)}</span>`;
+    const got = res[i] && res[i].outcome === "correct";
+    return `<span class="pillar${got ? "" : " missed"}" style="--c:${p.col}" title="${got ? "Collected" : "Not collected"}"><i>${got ? p.n : ""}</i>Pillar ${p.n}: ${esc(p.name)}</span>`;
   }).join("");
   $("sum-total").textContent = S.score;
   const chip = {
@@ -658,12 +662,8 @@ function showSummary() {
     </article>`).join("");
   const nxt = $("btn-next");
   const lastLevel = S.level === LEVELS.length - 1;
-  const secret = lastLevel && allMythsMelted();
-  nxt.textContent = !lastLevel
-    ? `Start Level ${S.level + 2}: ${LEVELS[S.level + 1].name}`
-    : secret ? "Secret bonus round unlocked!" : "See final results";
-  nxt.classList.toggle("secret", secret);
-  $("sum-secret").hidden = !secret;
+  nxt.textContent = !lastLevel ? `Start Level ${S.level + 2}: ${LEVELS[S.level + 1].name}` : "See final results";
+  $("sum-secret").hidden = !(lastLevel && B.fromGame && B.lastScore != null);
   show("summary");
   nxt.focus({ preventScroll: true });
 }
@@ -739,11 +739,10 @@ canvas.addEventListener("pointercancel", release);
 $("btn-start").addEventListener("click", startGame);
 $("btn-next").addEventListener("click", () => {
   if (S.level < LEVELS.length - 1) { S.level++; startLevel(); }
-  else if (allMythsMelted()) startBonus(true);
   else showFinal();
 });
 $("btn-bonus-again").addEventListener("click", () => startBonus(B.fromGame));
-$("btn-bonus-done").addEventListener("click", () => { if (B.fromGame) showFinal(); else show("start"); });
+$("btn-bonus-done").addEventListener("click", () => { if (B.fromGame) showSummary(); else show("start"); });
 $("btn-again").addEventListener("click", startGame);
 $("btn-home").addEventListener("click", () => show("start"));
 $("btn-pause").addEventListener("click", e => { togglePause(); e.currentTarget.blur(); });
@@ -778,7 +777,7 @@ function update(dt) {
   const L = LEVELS[S.level];
 
   if (S.phase === "intro" && S.phaseT > 2.6) startRound();
-  if (S.phase === "reveal" && S.phaseT > 2 && (!S.gifts.some(g => g.state === "fall") || S.phaseT > 8)) nextRound();
+  if (S.phase === "reveal" && S.phaseT > (shelfFull() ? .8 : 2) && (!S.gifts.some(g => g.kind === "present") || S.phaseT > 9)) nextRound();
   updateGifts(dt);
 
   // snowballs
@@ -1026,6 +1025,7 @@ function draw() {
   drawBackdrop();
   if (S.mode === "bonus") { drawBonus(); ctx.restore(); return; }
   S.balls.forEach(drawBall);
+  drawShelf(true);
   S.gifts.forEach(drawGift);
   drawShots();
   drawPlayer();
@@ -1062,9 +1062,21 @@ function updateGifts(dt) {
       g.vy = Math.min(125, g.vy + 260 * dt);   // parachute caps the speed
       g.y += g.vy * dt;
       g.x = clamp(g.x + Math.sin(g.t * 2.2) * 28 * dt, 30, W - 30);
-      if (g.y + 18 >= GROUND - 8 && Math.abs(g.x - S.px) < 58) { catchGift(g); S.gifts.splice(i, 1); continue; }
-      if (g.y + 18 >= GROUND + 8) { g.state = "landed"; g.y = GROUND - 10; g.t = 0; popup("Present missed", g.x, GROUND - 90, C.frost); }
-    } else if (g.t > 1.4) S.gifts.splice(i, 1);
+      if (g.y + 18 >= GROUND - 8 && Math.abs(g.x - S.px) < 58) { catchGift(g); toShelf(g); continue; }
+      if (g.y + 18 >= GROUND + 8) toShelf(g);
+    } else if (g.state === "toShelf") {
+      const to = slotPos(g.slot), p = clamp(g.t / .55, 0, 1), e = p * p * (3 - 2 * p);
+      g.x = g.fx + (to.x - g.fx) * e;
+      g.y = g.fy + (to.y - g.fy) * e - Math.sin(p * Math.PI) * 60;
+      g.sc = 1 - .5 * e;
+      if (p >= 1) {
+        S.shelf[g.slot] = g.pillar;
+        S.gifts.splice(i, 1);
+        for (let k = 0; k < (reduceMotion ? 3 : 10); k++) S.parts.push({ kind: "ember", x: to.x, y: to.y, vx: rand(-80, 80), vy: rand(-140, -40), life: rand(.3, .6), t: 0, r: rand(2, 4), col: k % 2 ? g.pillar.col : C.gold });
+        tone(1319, 1319, .12, "sine", .04);
+        if (shelfFull()) { popup("The shelf is full!", W / 2, 470, C.gold); S.shake = reduceMotion ? 0 : 5; }
+      }
+    }
   }
 }
 function catchGift(g) {
@@ -1078,11 +1090,40 @@ function catchGift(g) {
   tone(784, 784, .1, "sine", .06); tone(1047, 1047, .2, "sine", .06, .08);
   updateHUD();
 }
+function toShelf(g) { g.state = "toShelf"; g.t = 0; g.fx = g.x; g.fy = g.y; }
+function shelfFull() { return S.shelf.every(Boolean); }
+function slotPos(i) {
+  // 15 slots in three groups of five (Level 1, 2, 3) along the snow under the sled
+  const grp = Math.floor(i / 5), k = i % 5;
+  return { x: 238 + grp * 182 + k * 30, y: 627 };
+}
+function drawPresent(x, y, col, sc, tag) {
+  ctx.save(); ctx.translate(x, y); ctx.scale(sc, sc);
+  ctx.fillStyle = col; ctx.beginPath(); ctx.roundRect(-20, -14, 40, 32, 5); ctx.fill();
+  ctx.fillStyle = "rgba(0,0,0,.18)"; ctx.fillRect(-20, -14, 40, 6);
+  ctx.fillStyle = col; ctx.beginPath(); ctx.roundRect(-23, -20, 46, 9, 3); ctx.fill();
+  ctx.fillStyle = "#ffffff"; ctx.fillRect(-3.5, -20, 7, 38); ctx.fillRect(-20, -1, 40, 6);
+  ctx.beginPath(); ctx.ellipse(-8, -24, 8, 5, -.4, 0, 6.28); ctx.ellipse(8, -24, 8, 5, .4, 0, 6.28); ctx.fill();
+  if (tag) {
+    ctx.font = `700 11px ${FONT}`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.roundRect(10, 6, 24, 13, 3); ctx.fill();
+    ctx.fillStyle = C.ink; ctx.fillText("NHC", 22, 13);
+  }
+  ctx.restore();
+}
+function drawShelf(withPresents) {
+  ctx.font = `700 10px ${FONT}`; ctx.textAlign = "right"; ctx.textBaseline = "middle";
+  for (let grp = 0; grp < 3; grp++) { ctx.fillStyle = "#6f86a8"; ctx.fillText(`L${grp + 1}`, slotPos(grp * 5).x - 16, 628); }
+  for (let i = 0; i < 15; i++) {
+    const { x, y } = slotPos(i), p = PILLARS[i % 5];
+    if (withPresents && S.shelf[i]) { drawPresent(x, y, S.shelf[i].col, .5, false); continue; }
+    ctx.save(); ctx.globalAlpha = .55; ctx.strokeStyle = p.col; ctx.lineWidth = 1.5; ctx.setLineDash([3, 3]);
+    ctx.beginPath(); ctx.roundRect(x - 11, y - 11, 22, 20, 4); ctx.stroke(); ctx.restore();
+  }
+}
 function drawGift(g) {
   if (g.kind === "coal") { drawCoal(g); return; }
   const x = g.x, y = g.y, col = g.pillar.col;
-  ctx.save();
-  ctx.globalAlpha = g.state === "landed" ? clamp(1 - g.t / 1.4, 0, 1) : 1;
   if (g.state === "fall") {
     ctx.strokeStyle = "rgba(242,246,252,.75)"; ctx.lineWidth = 1.3;
     ctx.beginPath();
@@ -1095,25 +1136,75 @@ function drawGift(g) {
     ctx.fillStyle = col;
     ctx.beginPath(); ctx.moveTo(x - 12, y - 56); ctx.quadraticCurveTo(x, y - 84, x + 12, y - 56); ctx.closePath(); ctx.fill();
   }
-  // box, lid, ribbon, bow
-  ctx.fillStyle = col; ctx.beginPath(); ctx.roundRect(x - 20, y - 14, 40, 32, 5); ctx.fill();
-  ctx.fillStyle = "rgba(0,0,0,.18)"; ctx.fillRect(x - 20, y - 14, 40, 6);
-  ctx.fillStyle = col; ctx.beginPath(); ctx.roundRect(x - 23, y - 20, 46, 9, 3); ctx.fill();
-  ctx.fillStyle = "#ffffff"; ctx.fillRect(x - 3.5, y - 20, 7, 38); ctx.fillRect(x - 20, y - 1, 40, 6);
-  ctx.beginPath(); ctx.ellipse(x - 8, y - 24, 8, 5, -.4, 0, 6.28); ctx.ellipse(x + 8, y - 24, 8, 5, .4, 0, 6.28); ctx.fill();
-  // gift tag
-  ctx.font = `700 11px ${FONT}`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-  ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.roundRect(x + 10, y + 6, 24, 13, 3); ctx.fill();
-  ctx.fillStyle = C.ink; ctx.fillText("NHC", x + 22, y + 13);
+  drawPresent(x, y, col, g.sc || 1, true);
   if (g.state === "fall") {
     const label = `Pillar ${g.pillar.n}: ${g.pillar.name}`;
-    ctx.font = `600 15px ${FONT}`;
-    const lx = clamp(x, ctx.measureText(label).width / 2 + 12, W - ctx.measureText(label).width / 2 - 12);
+    ctx.font = `600 15px ${FONT}`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    const half = ctx.measureText(label).width / 2;
+    const lx = clamp(x, half + 12, W - half - 12);
     const ly = y - 104 < 62 ? y + 36 : y - 104;   // keep clear of the fairy lights
     ctx.lineWidth = 4; ctx.strokeStyle = "rgba(8,18,42,.9)"; ctx.strokeText(label, lx, ly);
     ctx.fillStyle = "#ffffff"; ctx.fillText(label, lx, ly);
   }
-  ctx.restore();
+}
+
+/* ================= THE 15th PRESENT: GIANT PRESENT BURSTS, SANTAS ESCAPE ================= */
+const UNWRAP = { rattle: .7, stagger: .07, fly: .6, wobble: 2.3, burst: 3.5, end: 5.3 };
+const GIANT = { x: W / 2, y: 330 };
+function updateUnwrap(dt) {
+  const t = B.phaseT;
+  if (!B.stirred && t > UNWRAP.wobble) { B.stirred = true; popup("Something is stirring inside…", W / 2, 170, C.gold); }
+  if (!B.burst && t > UNWRAP.burst) {
+    B.burst = true;
+    S.shake = reduceMotion ? 0 : 10;
+    puff(GIANT.x, GIANT.y, "#ffffff", 30);
+    for (let i = 0; i < (reduceMotion ? 20 : 90); i++) {
+      const a = rand(0, 6.28), sp = rand(120, 460);
+      S.parts.push({ kind: "drop", x: GIANT.x, y: GIANT.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 120, life: rand(.8, 1.6), t: 0, r: rand(3, 6), col: PILLARS[i % 5].col });
+    }
+    for (let i = 0; i < 10; i++) {
+      B.santas.push({ type: i % 3 ? "normal" : "sprint", state: "escape", r: i % 3 ? 24 : 21, x: GIANT.x + rand(-30, 30), y: GIANT.y, vx: rand(-220, 220), vy: rand(-430, -320), t: 0, rot: 0, spin: rand(-5, 5), hp: 1, flash: 0 });
+    }
+    popup("The Santas have escaped!", W / 2, 470, C.snow);
+    sfx.wrong(); sfx.melt();
+  }
+  for (let i = B.santas.length - 1; i >= 0; i--) {
+    const s = B.santas[i];
+    if (s.state !== "escape") continue;
+    s.vy += 50 * dt; s.x += s.vx * dt; s.y += s.vy * dt; s.rot += s.spin * dt;
+    if (s.y < -80 || s.x < -80 || s.x > W + 80) B.santas.splice(i, 1);
+  }
+  if (t > UNWRAP.end) {
+    B.santas = B.santas.filter(s => s.state !== "escape");
+    B.phase = "intro"; B.phaseT = 0;
+  }
+  updateHUD();
+}
+function drawUnwrap() {
+  const t = B.phaseT;
+  drawShelf(false);
+  let arrived = 0;
+  for (const f of B.fly) {
+    const p = clamp((t - f.delay) / UNWRAP.fly, 0, 1);
+    if (p >= 1) { arrived++; continue; }
+    let x = f.x, y = f.y, sc = .5;
+    if (p <= 0) { if (!reduceMotion) { x += rand(-1.6, 1.6); y += rand(-1.6, 1.6); } }
+    else {
+      const e = p * p * (3 - 2 * p);
+      x = f.x + (GIANT.x - f.x) * e;
+      y = f.y + (GIANT.y - f.y) * e - Math.sin(p * Math.PI) * 120;
+      sc = .5 - .15 * e;
+    }
+    drawPresent(x, y, f.pillar.col, sc, false);
+  }
+  if (arrived > 0 && !B.burst) {
+    const k = .45 + .55 * arrived / B.fly.length;
+    const wob = t > UNWRAP.wobble && !reduceMotion ? Math.sin(t * 28) * .08 * Math.min(1, t - UNWRAP.wobble) : 0;
+    ctx.save(); ctx.translate(GIANT.x, GIANT.y + 60 * k); ctx.rotate(wob); ctx.translate(0, -60 * k);
+    ctx.shadowColor = C.gold; ctx.shadowBlur = 30 * k;
+    drawPresent(0, 0, C.berry, 3.4 * k, true);
+    ctx.restore();
+  }
 }
 
 /* ================= SECRET BONUS ROUND: SANTA SIEGE ================= */
@@ -1131,8 +1222,11 @@ function allMythsMelted() {
   return r.length === LEVELS.length * ROUNDS && r.every(x => x.outcome === "correct");
 }
 
-function startBonus(fromGame) {
-  Object.assign(B, { phase: "intro", t: 0, phaseT: 0, hits: 0, pts: 0, lives: 3, combo: 0, bestCombo: 0, siege: 1, santas: [], coal: [], spawnT: .4, inv: 0, fromGame });
+function startBonus(fromGame, unwrap) {
+  // unwrap = the giant-present scene. Only after a perfect run (or #santa preview); "Play bonus again" skips it.
+  B.fly = unwrap ? S.shelf.map((p, i) => p && { pillar: p, ...slotPos(i), delay: UNWRAP.rattle + i * UNWRAP.stagger }).filter(Boolean) : [];
+  B.burst = false; B.stirred = false;
+  Object.assign(B, { phase: unwrap ? "unwrap" : "intro", t: 0, phaseT: 0, hits: 0, pts: 0, lives: 3, combo: 0, bestCombo: 0, siege: 1, santas: [], coal: [], spawnT: .4, inv: 0, fromGame });
   S.mode = "bonus"; S.balls = []; S.gifts = []; S.shots = []; S.parts = []; S.pops = [];
   S.paused = false; S.shake = 0; S.px = W / 2; S.targetX = null; S.cool = 0;
   $("btn-pause").textContent = "Pause";
@@ -1188,6 +1282,7 @@ function hitSanta(s) {
 
 function updateBonus(dt) {
   B.phaseT += dt;
+  if (B.phase === "unwrap") { updateUnwrap(dt); return; }
   if (B.phase === "intro") { if (B.phaseT > 3) { B.phase = "play"; B.phaseT = 0; } updateHUD(); return; }
   if (B.phase === "over") { if (B.phaseT > 3) showBonusResults(); return; }
   if (B.phase !== "play") return;
@@ -1294,7 +1389,7 @@ function showBonusResults() {
   $("bon-best").textContent = score > best
     ? (best ? `New personal best! Previous best: ${best}` : "Your first Santa Siege score. Now beat it!")
     : `Personal best: ${best}`;
-  $("btn-bonus-done").textContent = B.fromGame ? "See final results" : "Back to start";
+  $("btn-bonus-done").textContent = B.fromGame ? "See Level 3 feedback" : "Back to start";
   show("bonus");
   $("btn-bonus-again").focus({ preventScroll: true });
 }
@@ -1305,6 +1400,7 @@ function drawSanta(s) {
   ctx.save();
   ctx.translate(s.x, s.y);
   if (s.state === "tumble") { ctx.rotate(s.rot); ctx.globalAlpha = clamp(1.2 - s.t, 0, 1); }
+  else if (s.state === "escape") ctx.rotate(s.rot);
   const k = s.r / 24; ctx.scale(k, k);
   if (s.type === "sleigh") {
     ctx.fillStyle = "#8a3f1c"; ctx.beginPath(); ctx.roundRect(-30, 8, 60, 18, 7); ctx.fill();
@@ -1364,6 +1460,7 @@ function drawLives() {
   ctx.globalAlpha = 1;
 }
 function drawBonus() {
+  if (B.phase === "unwrap") drawUnwrap();
   B.coal.forEach(drawCoal);
   B.santas.forEach(drawSanta);
   for (const sh of S.shots) {
@@ -1374,7 +1471,7 @@ function drawBonus() {
   if (!(B.inv > 0 && Math.floor(B.inv * 10) % 2)) drawPlayer();
   drawParts();
   drawPops();
-  drawLives();
+  if (B.phase !== "unwrap") drawLives();
   if (B.phase === "intro") {
     panel([
       { text: "SECRET BONUS ROUND", font: `600 18px ${FONT}`, col: C.gold, y: H / 2 - 78 },
@@ -1397,7 +1494,11 @@ function drawBonus() {
 }
 
 /* Testing shortcut: add #santa to the link to jump straight to the bonus round */
-function checkHash() { if (location.hash === "#santa") startBonus(false); }
+function checkHash() {
+  if (location.hash !== "#santa") return;
+  S.shelf = Array.from({ length: 15 }, (_, i) => PILLARS[i % 5]);   // preview the full shelf bursting
+  startBonus(false, true);
+}
 window.addEventListener("hashchange", checkHash);
 
 /* ================= LOOP ================= */
